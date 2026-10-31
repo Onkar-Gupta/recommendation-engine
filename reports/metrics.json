@@ -10,5 +10,12 @@
     "precision_at_k": 0.17058189655172415,
     "recall_at_k": 0.15337456785360487,
     "n_users_evaluated": 928
+  },
+  "tf_mf": {
+    "rmse": 0.9283545771976338,
+    "precision_at_k": 0.10786637931034482,
+    "recall_at_k": 0.08246745037749026,
+    "n_users_evaluated": 928,
+    "train_seconds": 3.8
   }
 }
