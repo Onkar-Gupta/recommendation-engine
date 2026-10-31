@@ -33,14 +33,38 @@ def recall_at_k(recommended, relevant, k):
     return hits / len(relevant)
 
 
-def evaluate_recommendations(recommend_fn, train_df, test_df, k, threshold=DEFAULT_RELEVANT_THRESHOLD):
-    """Average Precision@k and Recall@k across test users who have at least
-    one relevant item (test rating >= threshold).
+def ndcg_at_k(recommended, relevant, k):
+    """Normalised Discounted Cumulative Gain. Unlike precision/recall, this
+    cares about ORDER within the top-k: a relevant item at rank 1 counts for
+    more than the same item at rank 10. Binary relevance (in `relevant` or
+    not), the standard choice for this metric in recommender literature.
+    """
+    relevant = set(relevant)
+    top_k = list(recommended)[:k]
+    if not relevant or not top_k:
+        return 0.0
+
+    dcg = sum(1.0 / np.log2(i + 2) for i, item in enumerate(top_k) if item in relevant)
+    ideal_hits = min(len(relevant), k)
+    idcg = sum(1.0 / np.log2(i + 2) for i in range(ideal_hits))
+    return dcg / idcg if idcg > 0 else 0.0
+
+
+def evaluate_recommendations(recommend_fn, train_df, test_df, k, threshold=DEFAULT_RELEVANT_THRESHOLD, n_items=None):
+    """Average Precision@k, Recall@k and NDCG@k across test users who have at
+    least one relevant item (test rating >= threshold). Also reports
+    catalogue coverage: how many distinct items ever get recommended across
+    all evaluated users. A model can score well on precision/recall while
+    recommending the same narrow handful of items to everyone (this
+    happened in this project — see CLAUDE.md) and coverage is what catches
+    that; precision/recall alone don't.
 
     `recommend_fn(user_id, k, exclude)` must return a ranked list of item ids
     with items in `exclude` (what the user already rated in train) left out.
+    Pass `n_items` (total catalogue size) to get coverage as a fraction.
     """
-    precisions, recalls = [], []
+    precisions, recalls, ndcgs = [], [], []
+    recommended_items_seen = set()
     for user_id, group in test_df.groupby("user_id"):
         relevant = set(group.loc[group["rating"] >= threshold, "item_id"])
         if not relevant:
@@ -49,12 +73,19 @@ def evaluate_recommendations(recommend_fn, train_df, test_df, k, threshold=DEFAU
         recommended = recommend_fn(user_id, k, seen)
         precisions.append(precision_at_k(recommended, relevant, k))
         recalls.append(recall_at_k(recommended, relevant, k))
+        ndcgs.append(ndcg_at_k(recommended, relevant, k))
+        recommended_items_seen.update(recommended)
 
-    return {
+    metrics = {
         "precision_at_k": float(np.mean(precisions)) if precisions else 0.0,
         "recall_at_k": float(np.mean(recalls)) if recalls else 0.0,
+        "ndcg_at_k": float(np.mean(ndcgs)) if ndcgs else 0.0,
         "n_users_evaluated": len(precisions),
+        "n_unique_items_recommended": len(recommended_items_seen),
     }
+    if n_items:
+        metrics["catalogue_coverage"] = len(recommended_items_seen) / n_items
+    return metrics
 
 
 def write_metrics(name, metrics, path="reports/metrics.json"):

@@ -93,13 +93,14 @@ def run_baselines(config_path="config.yaml"):
     )
     k = config["evaluation"]["top_k"]
     threshold = config["evaluation"]["relevant_rating_threshold"]
+    n_items = df["item_id"].nunique()
 
     results = {}
 
     popularity = PopularityBaseline(min_mean_rating=config["baselines"]["popularity_min_rating"]).fit(train)
     results["popularity"] = {
         "rmse": _rmse_for(popularity, test),
-        **evaluate_recommendations(popularity.recommend, train, test, k, threshold),
+        **evaluate_recommendations(popularity.recommend, train, test, k, threshold, n_items),
     }
 
     svd = TruncatedSVDBaseline(
@@ -107,7 +108,7 @@ def run_baselines(config_path="config.yaml"):
     ).fit(train)
     results["truncated_svd"] = {
         "rmse": _rmse_for(svd, test),
-        **evaluate_recommendations(svd.recommend, train, test, k, threshold),
+        **evaluate_recommendations(svd.recommend, train, test, k, threshold, n_items),
     }
 
     for name, metrics in results.items():
@@ -118,6 +119,9 @@ def run_baselines(config_path="config.yaml"):
 
 if __name__ == "__main__":
     results = run_baselines()
-    print(f"{'model':<15}{'rmse':>8}{'precision@k':>14}{'recall@k':>12}")
+    print(f"{'model':<15}{'rmse':>8}{'precision@k':>14}{'recall@k':>12}{'ndcg@k':>10}{'coverage':>10}")
     for name, metrics in results.items():
-        print(f"{name:<15}{metrics['rmse']:>8.3f}{metrics['precision_at_k']:>14.3f}{metrics['recall_at_k']:>12.3f}")
+        print(
+            f"{name:<15}{metrics['rmse']:>8.3f}{metrics['precision_at_k']:>14.3f}"
+            f"{metrics['recall_at_k']:>12.3f}{metrics['ndcg_at_k']:>10.3f}{metrics['catalogue_coverage']:>10.1%}"
+        )
