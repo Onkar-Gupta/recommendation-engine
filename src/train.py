@@ -102,6 +102,22 @@ def train_bpr(model, fit_df, val_df, n_users, n_items, user2idx, item2idx, idx2i
     optimizer = tf.keras.optimizers.Adam(train_cfg.get("bpr_learning_rate", 0.01))
     user_items = fit_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
 
+    # Compiled into a graph so each of the ~hundreds of mini-batches per
+    # epoch doesn't pay Python/eager dispatch overhead. Without this, a
+    # full training run took 3m40s; this is what makes a hyperparameter
+    # sweep (many full runs) actually practical.
+    @tf.function
+    def train_step(u_batch, pos_batch, neg_batch):
+        with tf.GradientTape() as tape:
+            pos_scores = model([u_batch, pos_batch])
+            neg_scores = model([u_batch, neg_batch])
+            loss = -tf.reduce_mean(tf.math.log_sigmoid(pos_scores - neg_scores))
+            if model.losses:
+                loss += tf.add_n(model.losses)
+        grads = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(grads, model.trainable_variables))
+        return loss
+
     best_score, best_weights, wait = -1.0, None, 0
     for _epoch in range(max_epochs):
         users, pos_items, neg_items = generate_bpr_triplets(fit_df, user_items, n_items, n_negatives, threshold, rng)
@@ -111,17 +127,11 @@ def train_bpr(model, fit_df, val_df, n_users, n_items, user2idx, item2idx, idx2i
         n_batches = max(1, len(users) // batch_size)
         for b in range(n_batches):
             sl = slice(b * batch_size, (b + 1) * batch_size)
-            u_batch = tf.constant(users[sl], dtype=tf.int32)
-            pos_batch = tf.constant(pos_items[sl], dtype=tf.int32)
-            neg_batch = tf.constant(neg_items[sl], dtype=tf.int32)
-            with tf.GradientTape() as tape:
-                pos_scores = model([u_batch, pos_batch])
-                neg_scores = model([u_batch, neg_batch])
-                loss = -tf.reduce_mean(tf.math.log_sigmoid(pos_scores - neg_scores))
-                if model.losses:
-                    loss += tf.add_n(model.losses)
-            grads = tape.gradient(loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(grads, model.trainable_variables))
+            train_step(
+                tf.constant(users[sl], dtype=tf.int32),
+                tf.constant(pos_items[sl], dtype=tf.int32),
+                tf.constant(neg_items[sl], dtype=tf.int32),
+            )
 
         score_matrix = score_all(model, n_users, n_items)
         recommend_fn = make_recommend_fn(score_matrix, user2idx, item2idx, idx2item)
@@ -227,7 +237,12 @@ def train(config_path="config.yaml", data_path=None):
     metrics = {
         "rmse": rmse(test_df["rating"].values, y_pred),
         **evaluate_recommendations(
-            recommend_fn, train_df, test_df, config["evaluation"]["top_k"], config["evaluation"]["relevant_rating_threshold"]
+            recommend_fn,
+            train_df,
+            test_df,
+            config["evaluation"]["top_k"],
+            config["evaluation"]["relevant_rating_threshold"],
+            n_items,
         ),
         "train_seconds": round(train_seconds, 1),
         "objective": objective,
@@ -241,5 +256,6 @@ if __name__ == "__main__":
     result = train(config_path=args.config, data_path=args.data)
     print(
         f"tf_mf ({result['objective']}): rmse={result['rmse']:.3f} precision@k={result['precision_at_k']:.3f} "
-        f"recall@k={result['recall_at_k']:.3f} train_seconds={result['train_seconds']}"
+        f"recall@k={result['recall_at_k']:.3f} ndcg@k={result['ndcg_at_k']:.3f} "
+        f"coverage={result['catalogue_coverage']:.1%} train_seconds={result['train_seconds']}"
     )
