@@ -55,12 +55,21 @@ recommendation-engine/
 └── notebooks/
 ```
 
+## Dataset stats
+
+| Dataset | Users | Items | Ratings | Sparsity |
+|---------|-------|-------|---------|----------|
+| MovieLens 100K | 943 | 1,682 | 100,000 | 0.9370 |
+| ratings_sample.csv | 30 | 39 | 200 | 0.8291 |
+| ecommerce_sample.csv | 25 | 49 | 200 | 0.8367 |
+
 ## Progress log
 
 | Date | Prompt | What was done | Commit |
 |------|--------|----------------|--------|
 | 2026-10-31 | Prompt 1 | Scaffolded structure, venv (Python 3.11), confirmed tensorflow/sklearn/fastapi import, created and pushed github.com/Onkar-Gupta/recommendation-engine | `chore: scaffold project structure` |
+| 2026-10-31 | Prompt 2 | Built data pipeline: download_data.py (MovieLens, certifi-backed SSL), data_loader.py (load_ratings, map_ids, split_train_test, load_item_titles, dataset_stats), 8 tests passing on both sample CSVs | `feat: add data download and loading pipeline`, `test: add data loader tests` |
 
 ## Next step
 
-Prompt 2: build the data pipeline (`scripts/download_data.py`, `src/data_loader.py`, tests against both sample datasets).
+Prompt 3: baselines and evaluation (RMSE, Precision@K, Recall@K in `src/evaluate.py`).
