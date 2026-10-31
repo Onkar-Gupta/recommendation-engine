@@ -55,6 +55,24 @@ recommendation-engine/
 └── notebooks/
 ```
 
+## Prompt 4 tuning tries (max 3, no further tuning after this)
+
+| Try | embedding_dim | l2_reg | RMSE | P@10 | R@10 | Verdict |
+|-----|---------------|--------|------|------|------|---------|
+| 1 | 32 | 0.0001 | 0.928 | 0.108 | 0.082 | Best overall (kept, final config) |
+| 2 | 32 | 0.001 | 0.986 | 0.097 | 0.078 | Worse on everything, stronger L2 hurt |
+| 3 | 16 | 0.0001 | 0.924 | 0.104 | 0.080 | Marginally better RMSE, worse ranking than try 1 |
+
+**Final comparison (popularity vs truncated_svd vs tf_mf), MovieLens 100K:**
+
+| Model | RMSE | Precision@10 | Recall@10 | Train time |
+|-------|------|---------------|-----------|------------|
+| Popularity | 1.126 | 0.135 | 0.132 | - |
+| TruncatedSVD | 1.040 | 0.171 | 0.153 | - |
+| tf_mf | 0.928 | 0.108 | 0.082 | 3.8s |
+
+tf_mf has the lowest rating error of the three but loses to TruncatedSVD (and even to the naive Popularity baseline) on ranking quality. Likely cause: plain dot-product MF gives sparse/under-trained items noisy scores that can still outrank well-supported items, which pure RMSE doesn't penalise. Worth investigating in a later pass (e.g. popularity-aware score blending), but not required by this prompt, which only asks to report the numbers honestly.
+
 ## Dataset stats
 
 | Dataset | Users | Items | Ratings | Sparsity |
@@ -70,7 +88,8 @@ recommendation-engine/
 | 2026-10-31 | Prompt 1 | Scaffolded structure, venv (Python 3.11), confirmed tensorflow/sklearn/fastapi import, created and pushed github.com/Onkar-Gupta/recommendation-engine | `chore: scaffold project structure` |
 | 2026-10-31 | Prompt 2 | Built data pipeline: download_data.py (MovieLens, certifi-backed SSL), data_loader.py (load_ratings, map_ids, split_train_test, load_item_titles, dataset_stats), 8 tests passing on both sample CSVs | `feat: add data download and loading pipeline`, `test: add data loader tests` |
 | 2026-10-31 | Prompt 3 | Added evaluate.py (rmse, precision_at_k, recall_at_k, write_metrics) and baselines.py (Popularity, TruncatedSVD). Ran on MovieLens 100K: popularity rmse=1.126 P@10=0.135 R@10=0.132; truncated_svd rmse=1.040 P@10=0.171 R@10=0.153. 6 metric tests passing. No tuning done. | `feat: add evaluation metrics`, `feat: add popularity and TruncatedSVD baselines`, `test: add metric tests` |
+| 2026-10-31 | Prompt 4 | Added model.py (TF subclassed matrix factorisation: user/item embeddings + biases + global mean, dot product, L2 reg) and train.py (CLI, early stopping, saves model + ID mappings, writes metrics). 3 model tests passing. Tried 3 configs (see below), kept the best. **Result: tf_mf beats both baselines on RMSE but does not beat TruncatedSVD on Precision@10/Recall@10 in any of the 3 tries** — reporting honestly, not tuning further. Also fixed a real perf bug: evaluating via recommend() per user meant ~900 separate model.predict() calls; batched into one predict() over the full user x item matrix (15min -> 4s). | `feat: add TensorFlow matrix factorisation model`, `feat: add training script with CLI`, `test: add model tests` |
 
 ## Next step
 
-Prompt 4: the TensorFlow matrix factorisation model (`src/model.py`, `src/train.py`) — must beat the TruncatedSVD baseline above.
+Prompt 5: FastAPI serving with the middleware pattern (`src/serve.py`).
