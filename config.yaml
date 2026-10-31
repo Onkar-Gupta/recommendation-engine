@@ -25,3 +25,8 @@ training:
 
 evaluation:
   top_k: 10
+  relevant_rating_threshold: 4
+
+baselines:
+  popularity_min_rating: 3.5
+  svd_n_components: 20
