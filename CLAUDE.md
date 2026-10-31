@@ -59,6 +59,7 @@ recommendation-engine/
 
 | Date | Prompt | What was done | Commit |
 |------|--------|----------------|--------|
+| 2026-10-31 | Prompt 1 | Scaffolded structure, venv (Python 3.11), confirmed tensorflow/sklearn/fastapi import, created and pushed github.com/Onkar-Gupta/recommendation-engine | `chore: scaffold project structure` |
 
 ## Next step
 
