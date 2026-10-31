@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Secrets
+.env
+
+# Data and models (not committed, licence/size reasons)
+data/raw/
+models/
+*.keras
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# VibeWise learning state
+.vibe-wise/

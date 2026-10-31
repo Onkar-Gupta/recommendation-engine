@@ -1,0 +1,10 @@
+tensorflow==2.*
+scikit-learn==1.*
+pandas==2.*
+numpy==1.*
+PyYAML==6.*
+fastapi==0.*
+uvicorn==0.*
+pytest==8.*
+ruff==0.*
+httpx==0.*

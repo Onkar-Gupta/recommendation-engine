@@ -1,0 +1,27 @@
+# Central config. No hardcoded paths or hyperparameters anywhere else in src/.
+
+paths:
+  raw_data_dir: data/raw
+  sample_ratings: data/sample/ratings_sample.csv
+  sample_ecommerce: data/sample/ecommerce_sample.csv
+  models_dir: models
+  reports_dir: reports
+
+data:
+  columns:
+    user: user_id
+    item: item_id
+    rating: rating
+    timestamp: timestamp
+  min_ratings_per_user: 5
+
+training:
+  seed: 42
+  test_split: 0.2
+  embedding_dim: 32
+  epochs: 20
+  batch_size: 256
+  learning_rate: 0.001
+
+evaluation:
+  top_k: 10
