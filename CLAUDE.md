@@ -69,7 +69,8 @@ recommendation-engine/
 |------|--------|----------------|--------|
 | 2026-10-31 | Prompt 1 | Scaffolded structure, venv (Python 3.11), confirmed tensorflow/sklearn/fastapi import, created and pushed github.com/Onkar-Gupta/recommendation-engine | `chore: scaffold project structure` |
 | 2026-10-31 | Prompt 2 | Built data pipeline: download_data.py (MovieLens, certifi-backed SSL), data_loader.py (load_ratings, map_ids, split_train_test, load_item_titles, dataset_stats), 8 tests passing on both sample CSVs | `feat: add data download and loading pipeline`, `test: add data loader tests` |
+| 2026-10-31 | Prompt 3 | Added evaluate.py (rmse, precision_at_k, recall_at_k, write_metrics) and baselines.py (Popularity, TruncatedSVD). Ran on MovieLens 100K: popularity rmse=1.126 P@10=0.135 R@10=0.132; truncated_svd rmse=1.040 P@10=0.171 R@10=0.153. 6 metric tests passing. No tuning done. | `feat: add evaluation metrics`, `feat: add popularity and TruncatedSVD baselines`, `test: add metric tests` |
 
 ## Next step
 
-Prompt 3: baselines and evaluation (RMSE, Precision@K, Recall@K in `src/evaluate.py`).
+Prompt 4: the TensorFlow matrix factorisation model (`src/model.py`, `src/train.py`) — must beat the TruncatedSVD baseline above.
