@@ -26,3 +26,7 @@ models/
 
 # VibeWise learning state
 .vibe-wise/
+
+# Vault-only planning docs (not part of the public repo)
+/P1_Build_Plan_Claude_Code.md
+/P1_Recommendation_Engine.md
