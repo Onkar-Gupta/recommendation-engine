@@ -1,0 +1,14 @@
+{
+  "popularity": {
+    "rmse": 1.1256390768831055,
+    "precision_at_k": 0.13512931034482759,
+    "recall_at_k": 0.1321943561211742,
+    "n_users_evaluated": 928
+  },
+  "truncated_svd": {
+    "rmse": 1.0403657461698055,
+    "precision_at_k": 0.17058189655172415,
+    "recall_at_k": 0.15337456785360487,
+    "n_users_evaluated": 928
+  }
+}
