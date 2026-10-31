@@ -19,14 +19,27 @@ training:
   seed: 42
   test_split: 0.2
   embedding_dim: 32
-  epochs: 20
   batch_size: 256
-  learning_rate: 0.001
   l2_reg: 0.0001
+
+  # objective: "bpr" (ranking loss, optimises top-k quality) or "mse"
+  # (plain rating-prediction loss). bpr is the one actually used; mse is
+  # kept because it's what we tried first and the comparison is worth
+  # keeping (see CLAUDE.md Prompt 4 log for why bpr replaced it).
+  objective: bpr
+  bpr_learning_rate: 0.01
+  bpr_negatives: 4
+  bpr_epochs: 30
+  bpr_patience: 5
+
+  # only used when objective is "mse"
+  epochs: 20
+  learning_rate: 0.001
 
 evaluation:
   top_k: 10
   relevant_rating_threshold: 4
+  min_item_support: 5  # items with fewer training ratings are excluded from ranking (too few ratings = noisy, unreliable embedding)
 
 baselines:
   popularity_min_rating: 3.5

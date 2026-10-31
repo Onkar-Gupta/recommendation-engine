@@ -33,6 +33,115 @@ def parse_args():
     return parser.parse_args()
 
 
+def generate_bpr_triplets(train_df, user_items, n_items, n_negatives, threshold, rng):
+    """One (user, positive_item, negative_item) triplet per positive rating
+    per negative sample. A positive is a train rating >= threshold; a
+    negative is an item that user never rated in train. Training the model
+    to score positives above negatives is what makes it learn to rank well,
+    instead of just predicting a plausible star rating.
+    """
+    positives = train_df[train_df["rating"] >= threshold]
+    users = np.repeat(positives["user_idx"].values, n_negatives)
+    pos_items = np.repeat(positives["item_idx"].values, n_negatives)
+
+    neg_items = np.empty(len(users), dtype=np.int64)
+    for i, user_idx in enumerate(users):
+        seen = user_items[user_idx]
+        neg = rng.integers(0, n_items)
+        while neg in seen:
+            neg = rng.integers(0, n_items)
+        neg_items[i] = neg
+
+    return users, pos_items, neg_items
+
+
+def score_all(model, n_users, n_items, batch_size=8192):
+    """Predict every (user, item) pair in one batched call. Looping recommend()
+    per user instead would mean hundreds of separate predict() calls, each
+    paying TF's per-call overhead (this is what made Prompt 4's first pass
+    take 15+ minutes instead of seconds)."""
+    all_user_idx = np.repeat(np.arange(n_users), n_items)
+    all_item_idx = np.tile(np.arange(n_items), n_users)
+    return model.predict([all_user_idx, all_item_idx], batch_size=batch_size, verbose=0).reshape(n_users, n_items)
+
+
+def make_recommend_fn(score_matrix, user2idx, item2idx, idx2item, low_support_idx=None):
+    low_support_idx = low_support_idx or set()
+
+    def recommend_fn(user_id, k, exclude_item_ids):
+        if user_id not in user2idx:
+            return []
+        scores = score_matrix[user2idx[user_id]].copy()
+        if low_support_idx:
+            scores[list(low_support_idx)] = -np.inf
+        for item_id in exclude_item_ids:
+            if item_id in item2idx:
+                scores[item2idx[item_id]] = -np.inf
+        top_idx = np.argsort(-scores)[:k]
+        return [idx2item[i] for i in top_idx]
+
+    return recommend_fn
+
+
+def train_bpr(model, fit_df, val_df, n_users, n_items, user2idx, item2idx, idx2item, config, seed):
+    """Train with a pairwise ranking loss (BPR): push the score of items a
+    user liked above items they never interacted with. Early-stops on
+    Precision@k measured on the validation split, since ranking quality is
+    the actual goal, not training loss.
+    """
+    train_cfg = config["training"]
+    eval_cfg = config["evaluation"]
+    n_negatives = train_cfg.get("bpr_negatives", 4)
+    threshold = eval_cfg["relevant_rating_threshold"]
+    k = eval_cfg["top_k"]
+    patience = train_cfg.get("bpr_patience", 5)
+    max_epochs = train_cfg.get("bpr_epochs", 30)
+    batch_size = train_cfg["batch_size"]
+
+    rng = np.random.default_rng(seed)
+    optimizer = tf.keras.optimizers.Adam(train_cfg.get("bpr_learning_rate", 0.01))
+    user_items = fit_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
+
+    best_score, best_weights, wait = -1.0, None, 0
+    for _epoch in range(max_epochs):
+        users, pos_items, neg_items = generate_bpr_triplets(fit_df, user_items, n_items, n_negatives, threshold, rng)
+        perm = rng.permutation(len(users))
+        users, pos_items, neg_items = users[perm], pos_items[perm], neg_items[perm]
+
+        n_batches = max(1, len(users) // batch_size)
+        for b in range(n_batches):
+            sl = slice(b * batch_size, (b + 1) * batch_size)
+            u_batch = tf.constant(users[sl], dtype=tf.int32)
+            pos_batch = tf.constant(pos_items[sl], dtype=tf.int32)
+            neg_batch = tf.constant(neg_items[sl], dtype=tf.int32)
+            with tf.GradientTape() as tape:
+                pos_scores = model([u_batch, pos_batch])
+                neg_scores = model([u_batch, neg_batch])
+                loss = -tf.reduce_mean(tf.math.log_sigmoid(pos_scores - neg_scores))
+                if model.losses:
+                    loss += tf.add_n(model.losses)
+            grads = tape.gradient(loss, model.trainable_variables)
+            optimizer.apply_gradients(zip(grads, model.trainable_variables))
+
+        score_matrix = score_all(model, n_users, n_items)
+        recommend_fn = make_recommend_fn(score_matrix, user2idx, item2idx, idx2item)
+        val_metrics = evaluate_recommendations(recommend_fn, fit_df, val_df, k, threshold)
+        score = val_metrics["precision_at_k"]
+
+        if score > best_score:
+            best_score, wait = score, 0
+            best_weights = [v.numpy() for v in model.trainable_variables]
+        else:
+            wait += 1
+            if wait >= patience:
+                break
+
+    if best_weights is not None:
+        for var, weights in zip(model.trainable_variables, best_weights):
+            var.assign(weights)
+    return model
+
+
 def train(config_path="config.yaml", data_path=None):
     config = load_config(config_path)
     set_seed(config["training"]["seed"])
@@ -43,6 +152,7 @@ def train(config_path="config.yaml", data_path=None):
         df = load_ratings(data_path, columns=config["data"]["columns"])
 
     df, user2idx, item2idx = map_ids(df)
+    idx2item = {v: k for k, v in item2idx.items()}
     n_users, n_items = len(user2idx), len(item2idx)
 
     train_df, test_df = split_train_test(
@@ -67,20 +177,24 @@ def train(config_path="config.yaml", data_path=None):
         global_mean=global_mean,
         l2_reg=config["training"].get("l2_reg", 0.0),
     )
-    model.compile(optimizer=tf.keras.optimizers.Adam(config["training"]["learning_rate"]), loss="mse")
 
-    early_stopping = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True)
-
+    objective = config["training"].get("objective", "mse")
     start = time.time()
-    model.fit(
-        [fit_df["user_idx"].values, fit_df["item_idx"].values],
-        fit_df["rating"].values,
-        validation_data=([val_df["user_idx"].values, val_df["item_idx"].values], val_df["rating"].values),
-        epochs=config["training"]["epochs"],
-        batch_size=config["training"]["batch_size"],
-        callbacks=[early_stopping],
-        verbose=0,
-    )
+
+    if objective == "bpr":
+        train_bpr(model, fit_df, val_df, n_users, n_items, user2idx, item2idx, idx2item, config, config["training"]["seed"])
+    else:
+        model.compile(optimizer=tf.keras.optimizers.Adam(config["training"]["learning_rate"]), loss="mse")
+        early_stopping = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True)
+        model.fit(
+            [fit_df["user_idx"].values, fit_df["item_idx"].values],
+            fit_df["rating"].values,
+            validation_data=([val_df["user_idx"].values, val_df["item_idx"].values], val_df["rating"].values),
+            epochs=config["training"]["epochs"],
+            batch_size=config["training"]["batch_size"],
+            callbacks=[early_stopping],
+            verbose=0,
+        )
     train_seconds = time.time() - start
 
     models_dir = Path(config["paths"]["models_dir"])
@@ -96,24 +210,17 @@ def train(config_path="config.yaml", data_path=None):
         encoding="utf-8",
     )
 
-    idx2item = {v: k for k, v in item2idx.items()}
+    score_matrix = score_all(model, n_users, n_items)
 
-    # Score every (user, item) pair in one batched predict() call. Calling
-    # recommend() (which calls predict()) once per test user instead would
-    # mean ~900 separate predict() calls, each paying TF's per-call overhead.
-    all_user_idx = np.repeat(np.arange(n_users), n_items)
-    all_item_idx = np.tile(np.arange(n_items), n_users)
-    score_matrix = model.predict([all_user_idx, all_item_idx], batch_size=8192, verbose=0).reshape(n_users, n_items)
+    # Items with very few training ratings have under-trained, noisy
+    # embeddings; keep them out of the recommendable pool (same idea the
+    # popularity baseline uses). Mostly relevant to the mse objective; bpr's
+    # negative sampling already pushes unsupported items down on its own.
+    min_support = config["evaluation"].get("min_item_support", 0)
+    item_support = fit_df["item_idx"].value_counts()
+    low_support_idx = {i for i in range(n_items) if item_support.get(i, 0) < min_support}
 
-    def recommend_fn(user_id, k, exclude_item_ids):
-        if user_id not in user2idx:
-            return []
-        scores = score_matrix[user2idx[user_id]].copy()
-        for item_id in exclude_item_ids:
-            if item_id in item2idx:
-                scores[item2idx[item_id]] = -np.inf
-        top_idx = np.argsort(-scores)[:k]
-        return [idx2item[i] for i in top_idx]
+    recommend_fn = make_recommend_fn(score_matrix, user2idx, item2idx, idx2item, low_support_idx)
 
     y_pred = model.predict([test_df["user_idx"].values, test_df["item_idx"].values], verbose=0).flatten()
 
@@ -123,6 +230,7 @@ def train(config_path="config.yaml", data_path=None):
             recommend_fn, train_df, test_df, config["evaluation"]["top_k"], config["evaluation"]["relevant_rating_threshold"]
         ),
         "train_seconds": round(train_seconds, 1),
+        "objective": objective,
     }
     write_metrics("tf_mf", metrics, path=f"{config['paths']['reports_dir']}/metrics.json")
     return metrics
@@ -132,6 +240,6 @@ if __name__ == "__main__":
     args = parse_args()
     result = train(config_path=args.config, data_path=args.data)
     print(
-        f"tf_mf: rmse={result['rmse']:.3f} precision@k={result['precision_at_k']:.3f} "
+        f"tf_mf ({result['objective']}): rmse={result['rmse']:.3f} precision@k={result['precision_at_k']:.3f} "
         f"recall@k={result['recall_at_k']:.3f} train_seconds={result['train_seconds']}"
     )

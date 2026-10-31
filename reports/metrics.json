@@ -12,10 +12,11 @@
     "n_users_evaluated": 928
   },
   "tf_mf": {
-    "rmse": 0.9283545771976338,
-    "precision_at_k": 0.10786637931034482,
-    "recall_at_k": 0.08246745037749026,
+    "rmse": 1.4810613082807675,
+    "precision_at_k": 0.17068965517241383,
+    "recall_at_k": 0.16289433067087214,
     "n_users_evaluated": 928,
-    "train_seconds": 3.8
+    "train_seconds": 220.4,
+    "objective": "bpr"
   }
 }
