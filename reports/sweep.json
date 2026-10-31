@@ -1,0 +1,161 @@
+[
+  {
+    "label": "baseline",
+    "overrides": {},
+    "wall_seconds": 19.7,
+    "rmse": 1.48106130506001,
+    "precision_at_k": 0.17068965517241383,
+    "recall_at_k": 0.16289433067087214,
+    "ndcg_at_k": 0.22354352429412375,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 90,
+    "catalogue_coverage": 0.0535077288941736,
+    "train_seconds": 18.0,
+    "objective": "bpr"
+  },
+  {
+    "label": "embedding_dim=16",
+    "overrides": {
+      "embedding_dim": 16
+    },
+    "wall_seconds": 35.8,
+    "rmse": 1.4779423297626229,
+    "precision_at_k": 0.17004310344827586,
+    "recall_at_k": 0.16184035062383648,
+    "ndcg_at_k": 0.21894192293218429,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 87,
+    "catalogue_coverage": 0.05172413793103448,
+    "train_seconds": 34.0,
+    "objective": "bpr"
+  },
+  {
+    "label": "embedding_dim=64",
+    "overrides": {
+      "embedding_dim": 64
+    },
+    "wall_seconds": 22.1,
+    "rmse": 1.481681350581272,
+    "precision_at_k": 0.1695043103448276,
+    "recall_at_k": 0.16224646644035717,
+    "ndcg_at_k": 0.22314588872686594,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 89,
+    "catalogue_coverage": 0.05291319857312723,
+    "train_seconds": 20.1,
+    "objective": "bpr"
+  },
+  {
+    "label": "bpr_negatives=8",
+    "overrides": {
+      "bpr_negatives": 8
+    },
+    "wall_seconds": 20.0,
+    "rmse": 1.4760590483439449,
+    "precision_at_k": 0.16670258620689657,
+    "recall_at_k": 0.1653016077825738,
+    "ndcg_at_k": 0.21588718445238853,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 83,
+    "catalogue_coverage": 0.04934601664684899,
+    "train_seconds": 18.2,
+    "objective": "bpr"
+  },
+  {
+    "label": "bpr_negatives=15",
+    "overrides": {
+      "bpr_negatives": 15
+    },
+    "wall_seconds": 71.7,
+    "rmse": 1.4829123823307124,
+    "precision_at_k": 0.17133620689655177,
+    "recall_at_k": 0.1625802674379866,
+    "ndcg_at_k": 0.21954352272332922,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 95,
+    "catalogue_coverage": 0.05648038049940547,
+    "train_seconds": 70.0,
+    "objective": "bpr"
+  },
+  {
+    "label": "bpr_learning_rate=0.005",
+    "overrides": {
+      "bpr_learning_rate": 0.005
+    },
+    "wall_seconds": 17.2,
+    "rmse": 1.4718190145559296,
+    "precision_at_k": 0.17532327586206894,
+    "recall_at_k": 0.16855480088020738,
+    "ndcg_at_k": 0.22608305128113196,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 83,
+    "catalogue_coverage": 0.04934601664684899,
+    "train_seconds": 15.5,
+    "objective": "bpr"
+  },
+  {
+    "label": "bpr_learning_rate=0.02",
+    "overrides": {
+      "bpr_learning_rate": 0.02
+    },
+    "wall_seconds": 19.8,
+    "rmse": 1.486696156944953,
+    "precision_at_k": 0.16799568965517242,
+    "recall_at_k": 0.163170500598816,
+    "ndcg_at_k": 0.2194207700810545,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 94,
+    "catalogue_coverage": 0.0558858501783591,
+    "train_seconds": 18.1,
+    "objective": "bpr"
+  },
+  {
+    "label": "l2_reg=1e-05",
+    "overrides": {
+      "l2_reg": 1e-05
+    },
+    "wall_seconds": 12.2,
+    "rmse": 2.561257490490722,
+    "precision_at_k": 0.21314655172413793,
+    "recall_at_k": 0.23721733120277919,
+    "ndcg_at_k": 0.2955407968110331,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 410,
+    "catalogue_coverage": 0.2437574316290131,
+    "train_seconds": 10.5,
+    "objective": "bpr"
+  },
+  {
+    "label": "l2_reg=0.001",
+    "overrides": {
+      "l2_reg": 0.001
+    },
+    "wall_seconds": 15.9,
+    "rmse": 1.1030628754814138,
+    "precision_at_k": 0.1384698275862069,
+    "recall_at_k": 0.12516655683140043,
+    "ndcg_at_k": 0.17590731095544443,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 54,
+    "catalogue_coverage": 0.03210463733650416,
+    "train_seconds": 14.2,
+    "objective": "bpr"
+  },
+  {
+    "label": "bpr_epochs=80,patience=10",
+    "overrides": {
+      "bpr_epochs": 80,
+      "bpr_patience": 10
+    },
+    "wall_seconds": 52.3,
+    "rmse": 1.4853481685783174,
+    "precision_at_k": 0.17306034482758623,
+    "recall_at_k": 0.17383273125946558,
+    "ndcg_at_k": 0.22133993195559556,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 77,
+    "catalogue_coverage": 0.045778834720570746,
+    "train_seconds": 50.8,
+    "objective": "bpr"
+  }
+]

@@ -3,20 +3,29 @@
     "rmse": 1.1256390768831055,
     "precision_at_k": 0.13512931034482759,
     "recall_at_k": 0.1321943561211742,
-    "n_users_evaluated": 928
+    "ndcg_at_k": 0.17587396030185456,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 56,
+    "catalogue_coverage": 0.03329369797859691
   },
   "truncated_svd": {
     "rmse": 1.0403657461698055,
     "precision_at_k": 0.17058189655172415,
     "recall_at_k": 0.15337456785360487,
-    "n_users_evaluated": 928
+    "ndcg_at_k": 0.22464207735864156,
+    "n_users_evaluated": 928,
+    "n_unique_items_recommended": 349,
+    "catalogue_coverage": 0.2074910820451843
   },
   "tf_mf": {
-    "rmse": 1.4810613082807675,
-    "precision_at_k": 0.17068965517241383,
-    "recall_at_k": 0.16289433067087214,
+    "rmse": 2.561257490490722,
+    "precision_at_k": 0.21314655172413793,
+    "recall_at_k": 0.23721733120277919,
+    "ndcg_at_k": 0.2955407968110331,
     "n_users_evaluated": 928,
-    "train_seconds": 220.4,
+    "n_unique_items_recommended": 410,
+    "catalogue_coverage": 0.2437574316290131,
+    "train_seconds": 10.3,
     "objective": "bpr"
   }
 }
