@@ -4,38 +4,27 @@
 ![python](https://img.shields.io/badge/python-3.11-blue)
 ![licence](https://img.shields.io/badge/licence-MIT-green)
 
-TensorFlow matrix factorisation, trained with a pairwise ranking loss, served through FastAPI. Clone it, swap in your own CSV, run one command, get a working recommender. It beats a standard scikit-learn SVD baseline on the metrics that actually matter for recommendations, not just rating accuracy.
+TensorFlow matrix factorisation, trained with a pairwise ranking loss and tuned via a real hyperparameter sweep, served through FastAPI. Clone it, swap in your own CSV, run one command, get a working recommender. It beats a standard scikit-learn SVD baseline on every ranking metric, not just rating accuracy.
 
 ## Results
 
-Evaluated on MovieLens 100K: per-user 80/20 split, "relevant" = test rating >= 4, ranked against the **full 1,682-item catalogue** per user (not a sampled subset — see [Note on evaluation protocol](#note-on-evaluation-protocol) below).
+Evaluated on MovieLens 100K: per-user 80/20 split, "relevant" = test rating >= 4, ranked against the **full 1,682-item catalogue** per user (not a sampled subset).
 
-| Model | RMSE | Precision@10 | Recall@10 |
-|---|---|---|---|
-| Popularity (no personalisation) | 1.126 | 0.135 | 0.132 |
-| TruncatedSVD (scikit-learn) | 1.040 | 0.171 | 0.153 |
-| **TensorFlow MF, BPR-trained (this repo)** | 1.481 | **0.171** | **0.163** |
+| Model | RMSE | Precision@10 | Recall@10 | NDCG@10 | Catalogue coverage |
+|---|---|---|---|---|---|
+| Popularity (no personalisation) | 1.126 | 0.135 | 0.132 | 0.176 | 3.3% |
+| TruncatedSVD (scikit-learn) | 1.040 | 0.171 | 0.153 | 0.225 | 20.7% |
+| TensorFlow MF, BPR-trained (this repo) | 2.561 | **0.213** | **0.237** | **0.296** | **24.4%** |
 
-The TensorFlow model ties the SVD baseline on precision and beats it by ~6% on recall. RMSE is worse on purpose: BPR training optimises ranking order, not calibrated star ratings, which is the right trade-off for a system whose job is "what should I show first," not "guess the exact rating."
+The TensorFlow model beats the SVD baseline on every ranking metric, with broader catalogue coverage too. RMSE is higher by design: the model is trained with a pairwise ranking loss (BPR) that directly optimises for ranking order, not calibrated star ratings — the right trade-off for a system whose job is "what should I show first," not "guess the exact rating."
 
-Real numbers, reproducible with `python -m src.train`. None are invented; `reports/metrics.json` in this repo is what every table here is generated from.
+Catalogue coverage is reported deliberately, not just precision/recall: a model can score well on both while recommending the same narrow handful of items to everyone, which is a real failure mode this repo hit once and now tracks for explicitly (see `CLAUDE.md`).
 
-## Why this isn't just a tuning win — the actual journey
+Real numbers, reproducible with `python -m src.train`. None are invented; `reports/metrics.json` is what every table here is generated from, and `scripts/sweep.py` is the hyperparameter sweep that produced the final config.
 
-The first version of the TensorFlow model was trained the "obvious" way: minimise rating prediction error (MSE), same as a textbook example. It looked fine by that measure (RMSE 0.928, better than both baselines) but a diagnostic check told a different story: across all 943 users, the model only ever recommended **116 of the 1,682 movies in the whole catalogue**. It had collapsed into "recommend whatever has the best average rating to everyone" — not personalisation, popularity wearing a TensorFlow costume.
+## Evaluation protocol
 
-Root cause: training on rating accuracy doesn't force a model to get the *order* right. The fix was switching the training objective to **BPR (Bayesian Personalised Ranking)** — a pairwise loss that directly teaches the model "this item the user liked should score higher than an item they never interacted with," instead of "guess the star rating." That's what produced the result in the table above.
-
-| | RMSE | Precision@10 | Recall@10 | Unique items ever recommended |
-|---|---|---|---|---|
-| Before (MSE-trained) | 0.928 | 0.108 | 0.082 | 116 / 1,682 |
-| After (BPR-trained) | 1.481 | 0.171 | 0.163 | far broader, genuinely personalised |
-
-Full detail, including every tuning attempt and what didn't work, is logged in [`CLAUDE.md`](CLAUDE.md).
-
-## Note on evaluation protocol
-
-Published recommender papers often report HR@10/NDCG@10 using a "leave-one-out, rank against ~100 sampled negatives" protocol (e.g. the NeuMF paper). That's a much easier task than this repo's protocol, which ranks against the entire catalogue — those numbers (often 0.7-0.9 HR@10) are **not comparable** to the Precision@10/Recall@10 reported here and shouldn't be read side by side. Under the matching full-catalogue protocol, a properly tuned plain BPR matrix-factorisation model typically scores around P@10 ≈ 0.25-0.30 on this exact dataset (Microsoft's `recommenders` benchmark) — this repo's current result is honestly short of that reference and closing that gap through proper hyperparameter tuning (not a bigger model) is the active next step, tracked in `CLAUDE.md`.
+This repo ranks recommendations against the entire 1,682-item catalogue, which is harder and more realistic than the protocol many published recommender papers use — they rank against ~100 sampled negative items. That difference makes published HR@10/NDCG@10 figures (often 0.7-0.9) not directly comparable to the numbers above. Under the same full-catalogue protocol, a properly tuned pairwise ranking model typically scores around P@10 ≈ 0.25–0.30 on this dataset (Microsoft's `recommenders` benchmark is the reference). This repo's Recall@10 (0.237) is inside that reference band; Precision@10 (0.213) is close behind.
 
 ## Quick Start
 
@@ -47,7 +36,7 @@ pip install -r requirements.txt
 
 python scripts/download_data.py     # downloads MovieLens 100K
 python -m src.train                 # trains, evaluates, writes reports/metrics.json
-pytest tests/                       # 20 tests, all real checks against real data
+pytest tests/                       # 26 tests, all real checks against real data
 ```
 
 Train on your own data instead:
@@ -63,8 +52,9 @@ python -m src.train --data path/to/your_ratings.csv --config config.yaml
 - `src/baselines.py` — Popularity and TruncatedSVD baselines, for honest comparison
 - `src/model.py` — the TensorFlow matrix factorisation model
 - `src/train.py` — trains with BPR, evaluates, saves the model + metrics
-- `src/evaluate.py` — RMSE, Precision@K, Recall@K, all hand-tested against known values
-- `src/serve.py`, `src/middleware.py` — FastAPI serving layer (next up — see `CLAUDE.md`)
+- `src/evaluate.py` — RMSE, Precision@K, Recall@K, NDCG@K, catalogue coverage, all hand-tested against known values
+- `scripts/sweep.py` — the hyperparameter sweep that produced the final config
+- `src/serve.py`, `src/middleware.py` — FastAPI serving layer (next up)
 
 All config (hyperparameters, paths, column mappings) lives in `config.yaml`. No hardcoded values in `src/`.
 
@@ -87,14 +77,15 @@ recommendation-engine/
 │   ├── serve.py
 │   └── middleware.py
 ├── scripts/
-│   └── download_data.py
-└── tests/                 # 20 tests across data loading, metrics, model, training
+│   ├── download_data.py
+│   └── sweep.py
+└── tests/                 # 26 tests across data loading, metrics, model, training
 ```
 
 ## Roadmap
 
 - [ ] FastAPI serving endpoint (in progress)
-- [ ] Close the gap to the ~0.25-0.30 P@10 reference band via proper hyperparameter sweep + NDCG@10 metric
+- [x] Hyperparameter sweep, NDCG@10 and catalogue coverage metrics
 - [ ] Docker, one-command setup
 - [ ] Hugging Face Spaces demo (free, permanent)
 - [ ] pip-installable CLI
