@@ -44,3 +44,16 @@ evaluation:
 baselines:
   popularity_min_rating: 3.5
   svd_n_components: 20
+
+serving:
+  model_version: "1.0.0"
+  dataset_name: MovieLens 100K
+  ratings_path: data/raw/ml-100k/u.data  # seen-item exclusion and popularity fallback are built from this
+  item_titles_path: data/raw/ml-100k/u.item  # optional; titles are null if missing
+  default_k: 10
+  max_k: 50
+  usage_log_path: logs/api_usage.jsonl
+
+auth:
+  enabled: false  # when true, requests must carry the header below (presence check only, no key validation)
+  api_key_header: X-API-Key

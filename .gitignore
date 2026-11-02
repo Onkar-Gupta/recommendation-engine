@@ -30,3 +30,6 @@ models/
 # Vault-only planning docs (not part of the public repo)
 /P1_Build_Plan_Claude_Code.md
 /P1_Recommendation_Engine.md
+
+# API usage logs
+logs/
