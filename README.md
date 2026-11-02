@@ -172,6 +172,8 @@ make docker-build && make docker-run     # Windows: .\run.ps1 docker-build, then
 curl localhost:8000/health
 ```
 
+Open `http://localhost:8000` in your browser. The server prints `0.0.0.0:8000`, which means "all addresses"; browsers cannot open that one.
+
 ## Why this repo?
 
 Surprise, LightFM and Implicit are libraries. This repo is a small working service built around one model. They do different jobs, and some of theirs are better.

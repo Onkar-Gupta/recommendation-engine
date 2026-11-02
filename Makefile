@@ -34,4 +34,5 @@ docker-build:
 
 # The image holds no model or data: it reads the ones you trained locally.
 docker-run:
+	@echo "Open http://localhost:8000 in your browser (not 0.0.0.0). Ctrl+C stops it."
 	docker run --rm -p 8000:8000 -v "$(CURDIR)/models:/app/models:ro" -v "$(CURDIR)/data:/app/data:ro" recommendation-engine

@@ -22,5 +22,5 @@ switch ($Target) {
     "lint"         { Run $py @("-m", "ruff", "check", ".") }
     "all"          { & $PSCommandPath setup; & $PSCommandPath data; & $PSCommandPath train; & $PSCommandPath serve }
     "docker-build" { Run "docker" @("build", "-t", "recommendation-engine", ".") }
-    "docker-run"   { Run "docker" @("run", "--rm", "-p", "8000:8000", "-v", "${PWD}\models:/app/models:ro", "-v", "${PWD}\data:/app/data:ro", "recommendation-engine") }
+    "docker-run"   { Write-Host "Open http://localhost:8000 in your browser (not 0.0.0.0). Ctrl+C stops it."; Run "docker" @("run", "--rm", "-p", "8000:8000", "-v", "${PWD}\models:/app/models:ro", "-v", "${PWD}\data:/app/data:ro", "recommendation-engine") }
 }
