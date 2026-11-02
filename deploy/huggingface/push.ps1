@@ -3,7 +3,7 @@
 # PowerShell window first, never in a file):   $env:HF_TOKEN = "hf_..."
 # Create the empty Space on huggingface.co first (SDK: Docker, Blank, Public).
 param(
-    [string]$User = "Onkar-Gupta",
+    [string]$User = "Onkar-Gupta-HF",
     [string]$Space = "recommendation-engine"
 )
 
