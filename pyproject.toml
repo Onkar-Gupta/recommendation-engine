@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rec-engine"
+version = "1.1.0"
+description = "Train a TensorFlow recommender on your own ratings and serve it with FastAPI."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Onkar Gupta" }]
+keywords = ["recommender-system", "matrix-factorization", "tensorflow", "fastapi"]
+# Serving only: no TensorFlow. Training needs the [train] extra.
+dependencies = [
+    "numpy==1.*",
+    "pandas==2.*",
+    "PyYAML==6.*",
+    "fastapi==0.*",
+    "uvicorn==0.*",
+    "certifi",
+]
+
+[project.optional-dependencies]
+train = ["tensorflow==2.*", "scikit-learn==1.*"]
+dev = ["pytest==8.*", "ruff==0.*", "httpx==0.*"]
+
+[project.scripts]
+rec-engine = "rec_engine.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Onkar-Gupta/recommendation-engine"
+
+[tool.setuptools.packages.find]
+include = ["rec_engine*"]
+
+[tool.setuptools.package-data]
+rec_engine = ["default_config.yaml", "static/*.html", "static/genres/*.png"]
