@@ -16,8 +16,39 @@ jobs:
       - run: ruff check .
       - run: pytest tests/ -v
 
-  docker:
+  # Runs the Makefile targets and the Docker container the way a new user would.
+  make-and-docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t recommendation-engine .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: make setup
+      - run: make data
+      - run: make train
+      - run: make lint
+      - run: make test
+
+      - name: make serve answers
+        run: |
+          make serve &
+          for i in $(seq 1 60); do curl -sf localhost:8000/health && break; sleep 2; done
+          curl -sf "localhost:8000/recommend/1?k=3" | grep -q personalized
+          curl -sf localhost:8000/ | grep -q "Recommendation Engine"
+          pkill -f "uvicorn src.serve" || true
+
+      - name: make train-custom works on the movie sample
+        run: make train-custom DATA=data/sample/ratings_sample.csv
+
+      - name: make train again (restore the full model for Docker)
+        run: make train
+
+      - name: docker answers
+        run: |
+          make docker-build
+          make docker-run &
+          for i in $(seq 1 90); do curl -sf localhost:8000/health && break; sleep 2; done
+          curl -sf "localhost:8000/recommend/1?k=3" | grep -q personalized
+          curl -sf localhost:8000/static/genres/Comedy.png -o /dev/null
+          docker ps -q | xargs -r docker stop
