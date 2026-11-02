@@ -53,6 +53,7 @@ jobs:
       - name: docker answers
         run: |
           make docker-build
+          docker image ls recommendation-engine
           make docker-run &
           for i in $(seq 1 90); do curl -sf localhost:8000/health && break; sleep 2; done
           curl -sf "localhost:8000/recommend/1?k=3" | grep -q personalized
@@ -65,6 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build -f deploy/huggingface/Dockerfile -t space-image .
+      - run: docker image ls space-image
       - name: space image answers
         run: |
           docker run -d -p 7860:7860 --name space space-image

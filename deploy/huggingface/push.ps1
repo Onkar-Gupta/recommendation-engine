@@ -26,7 +26,7 @@ Copy-Item (Join-Path $repo "src") (Join-Path $work "src") -Recurse
 Get-ChildItem (Join-Path $work "src") -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
 New-Item -ItemType Directory (Join-Path $work "scripts") | Out-Null
 Copy-Item (Join-Path $repo "scripts\download_data.py") (Join-Path $work "scripts")
-Copy-Item (Join-Path $repo "config.yaml"), (Join-Path $repo "requirements.txt") $work
+Copy-Item (Join-Path $repo "config.yaml"), (Join-Path $repo "requirements.txt"), (Join-Path $repo "requirements-serve.txt") $work
 Copy-Item (Join-Path $PSScriptRoot "Dockerfile"), (Join-Path $PSScriptRoot "README.md") $work
 
 Set-Location $work
