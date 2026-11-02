@@ -46,6 +46,14 @@ Every number comes from `reports/metrics.json`, written by `python -m src.train`
 
 Ranking against the whole catalogue is harder and more realistic than the protocol many papers use, which ranks against about 100 sampled negatives. Their reported HR@10 and NDCG@10 figures (often 0.7 to 0.9) are therefore not comparable to the table above. Under the same full-catalogue protocol, a well-tuned pairwise model typically reaches P@10 of about 0.25 to 0.30 on this dataset (the Microsoft `recommenders` benchmarks are the reference). Recall@10 here (0.237) sits inside that range. Precision@10 (0.213) is close behind.
 
+## Exploring the data
+
+[`notebooks/exploration.ipynb`](notebooks/exploration.ipynb) walks through the rating distribution, the long tail and the model comparison, with outputs saved. To re-run it: `pip install -r requirements-notebook.txt`.
+
+![The long tail of the ratings](docs/images/long-tail.png)
+
+![Model comparison on four ranking metrics](docs/images/model-comparison.png)
+
 ## How it works
 
 ```
@@ -68,8 +76,10 @@ recommendation-engine/
 ├── config.yaml            # every path, hyperparameter and column name
 ├── Makefile, run.ps1      # one-command targets (Unix, Windows)
 ├── Dockerfile
+├── requirements.txt, requirements-notebook.txt
 ├── data/sample/           # small synthetic CSVs: movie-like and e-commerce-like
-├── docs/images/           # screenshot and the artwork sheet
+├── notebooks/             # exploration.ipynb with saved outputs
+├── docs/images/           # screenshot, charts and the artwork sheet
 ├── scripts/               # download_data.py, sweep.py
 ├── src/
 │   ├── data_loader.py     # load any user/item/rating CSV, map ids, split
