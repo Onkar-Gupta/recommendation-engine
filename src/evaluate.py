@@ -96,3 +96,21 @@ def write_metrics(name, metrics, path="reports/metrics.json"):
     all_metrics[name] = metrics
     path.write_text(json.dumps(all_metrics, indent=2), encoding="utf-8")
     return all_metrics
+
+
+def make_recommend_fn(score_matrix, user2idx, item2idx, idx2item, low_support_idx=None):
+    low_support_idx = low_support_idx or set()
+
+    def recommend_fn(user_id, k, exclude_item_ids):
+        if user_id not in user2idx:
+            return []
+        scores = score_matrix[user2idx[user_id]].copy()
+        if low_support_idx:
+            scores[list(low_support_idx)] = -np.inf
+        for item_id in exclude_item_ids:
+            if item_id in item2idx:
+                scores[item2idx[item_id]] = -np.inf
+        top_idx = np.argsort(-scores)[:k]
+        return [idx2item[i] for i in top_idx]
+
+    return recommend_fn

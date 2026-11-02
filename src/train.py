@@ -16,8 +16,14 @@ import numpy as np
 import tensorflow as tf
 
 from src.data_loader import load_config, load_ratings, map_ids, split_train_test
-from src.evaluate import evaluate_recommendations, rmse, write_metrics
+from src.evaluate import (
+    evaluate_recommendations,
+    make_recommend_fn,
+    rmse,
+    write_metrics,
+)
 from src.model import build_model
+from src.weights import WEIGHTS_FILE, save_weights
 
 
 def set_seed(seed):
@@ -63,24 +69,6 @@ def score_all(model, n_users, n_items, batch_size=8192):
     all_user_idx = np.repeat(np.arange(n_users), n_items)
     all_item_idx = np.tile(np.arange(n_items), n_users)
     return model.predict([all_user_idx, all_item_idx], batch_size=batch_size, verbose=0).reshape(n_users, n_items)
-
-
-def make_recommend_fn(score_matrix, user2idx, item2idx, idx2item, low_support_idx=None):
-    low_support_idx = low_support_idx or set()
-
-    def recommend_fn(user_id, k, exclude_item_ids):
-        if user_id not in user2idx:
-            return []
-        scores = score_matrix[user2idx[user_id]].copy()
-        if low_support_idx:
-            scores[list(low_support_idx)] = -np.inf
-        for item_id in exclude_item_ids:
-            if item_id in item2idx:
-                scores[item2idx[item_id]] = -np.inf
-        top_idx = np.argsort(-scores)[:k]
-        return [idx2item[i] for i in top_idx]
-
-    return recommend_fn
 
 
 def train_bpr(model, fit_df, val_df, n_users, n_items, user2idx, item2idx, idx2item, config, seed):
@@ -210,6 +198,7 @@ def train(config_path="config.yaml", data_path=None):
     models_dir = Path(config["paths"]["models_dir"])
     models_dir.mkdir(parents=True, exist_ok=True)
     model.save(models_dir / "tf_mf.keras")
+    save_weights(model, models_dir / WEIGHTS_FILE)  # the server reads this, so it never needs TensorFlow
     (models_dir / "id_mappings.json").write_text(
         json.dumps(
             {

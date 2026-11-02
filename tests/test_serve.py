@@ -118,3 +118,18 @@ def test_static_export_matches_the_api(client, tmp_dir):
     assert data["recommend"]["1"] == from_api
     assert data["popular"]
     assert 'name="static-data"' in (tmp_dir / "site/index.html").read_text(encoding="utf-8")
+
+
+def test_server_never_loads_tensorflow(client, tmp_dir):
+    """Serving must stay light: importing and starting the app must not pull in TensorFlow or scikit-learn."""
+    import subprocess
+    import sys
+
+    code = (
+        "import sys; from src.serve import create_app; "
+        f"create_app(r'{tmp_dir / 'config_auth_False.yaml'}'); "
+        "loaded = [m for m in ('tensorflow', 'keras', 'sklearn') if m in sys.modules]; "
+        "assert not loaded, loaded"
+    )
+    result = subprocess.run([sys.executable, "-c", code], check=False, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr[-500:]

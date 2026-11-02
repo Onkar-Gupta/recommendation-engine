@@ -3,7 +3,6 @@ the TensorFlow model (Prompt 4) something real to beat.
 """
 
 import numpy as np
-from sklearn.decomposition import TruncatedSVD
 
 from src.data_loader import load_config, load_ratings, split_train_test
 from src.evaluate import evaluate_recommendations, rmse, write_metrics
@@ -45,6 +44,9 @@ class TruncatedSVDBaseline:
         self.seed = seed
 
     def fit(self, train_df):
+        # Imported here so the server, which only needs PopularityBaseline, never loads scikit-learn.
+        from sklearn.decomposition import TruncatedSVD
+
         self.user_ids_ = sorted(train_df["user_id"].unique())
         self.item_ids_ = sorted(train_df["item_id"].unique())
         self.user_pos_ = {u: i for i, u in enumerate(self.user_ids_)}

@@ -1,0 +1,7 @@
+# Everything the API server needs. No TensorFlow: serving runs on NumPy and pandas.
+# Training needs the full requirements.txt.
+numpy==1.*
+pandas==2.*
+PyYAML==6.*
+fastapi==0.*
+uvicorn==0.*
