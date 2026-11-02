@@ -33,4 +33,3 @@ models/
 
 # API usage logs
 logs/
-data/posters.json

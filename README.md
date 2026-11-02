@@ -83,17 +83,6 @@ recommendation-engine/
 └── tests/                 # 26 tests across data loading, metrics, model, training
 ```
 
-## Poster images (optional)
-
-The web page shows a plain text tile for each film. To show posters, get a free TMDB "API Read Access Token" from themoviedb.org, then:
-
-```bash
-set TMDB_TOKEN=your_token_here          # PowerShell: $env:TMDB_TOKEN="your_token_here"
-python -m src.posters                   # saves poster links to data/posters.json (not committed)
-```
-
-Only links are stored, never the images. The token is read from the environment and never written to a file.
-
 ## Docker
 
 The image holds code only. It reads the model and data you trained locally, so one image serves any trained model.

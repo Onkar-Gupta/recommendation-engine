@@ -46,8 +46,6 @@ def create_app(config_path="config.yaml"):
         idx for item_id, idx in item2idx.items() if support.get(item_id, 0) < config["evaluation"]["min_item_support"]
     }
     titles = load_item_titles(serving["item_titles_path"])
-    posters_file = Path(serving.get("posters_path", ""))
-    posters = {int(k): v for k, v in json.loads(posters_file.read_text(encoding="utf-8")).items()} if posters_file.is_file() else {}
     genres = load_item_genres(serving["item_titles_path"])  # same u.item file holds titles and genres
     liked = ratings.sort_values(["rating", "timestamp"], ascending=False).groupby("user_id")[["item_id", "rating"]].apply(
         lambda g: list(zip(g["item_id"], g["rating"]))
@@ -58,7 +56,7 @@ def create_app(config_path="config.yaml"):
     item_vectors = model.item_embedding.get_weights()[0]
 
     def to_item(item_id, score):
-        return {"item_id": int(item_id), "title": titles.get(item_id), "genres": genres.get(item_id, []), "poster": posters.get(item_id), "score": float(score)}
+        return {"item_id": int(item_id), "title": titles.get(item_id), "genres": genres.get(item_id, []), "score": float(score)}
 
     app = FastAPI(title="Recommendation Engine")
     # add_middleware puts the LAST one added outermost, so usage tracking wraps auth and logs rejected requests too.

@@ -50,7 +50,6 @@ serving:
   dataset_name: MovieLens 100K
   ratings_path: data/raw/ml-100k/u.data  # seen-item exclusion and popularity fallback are built from this
   item_titles_path: data/raw/ml-100k/u.item  # optional; titles are null if missing
-  posters_path: data/posters.json  # optional JSON of {item_id: poster_url}. Cards fall back to text tiles without it
   default_k: 10
   max_k: 50
   usage_log_path: logs/api_usage.jsonl
