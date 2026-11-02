@@ -88,12 +88,14 @@ recommendation-engine/
 The image holds code only. It reads the model and data you trained locally, so one image serves any trained model.
 
 ```bash
-make train          # or: .un.ps1 train
+make train          # or: .
+un.ps1 train
 make docker-build && make docker-run
 curl localhost:8000/health
 ```
 
-`make all` (or `.un.ps1 all`) goes from a fresh clone to a running API: setup, data, train, serve. `make train-custom DATA=my.csv` trains on your own CSV.
+`make all` (or `.
+un.ps1 all`) goes from a fresh clone to a running API: setup, data, train, serve. `make train-custom DATA=my.csv` trains on your own CSV.
 
 ## API
 
@@ -102,6 +104,7 @@ Start it with `uvicorn src.serve:create_app --factory`, then open `/` for a simp
 | Endpoint | What it returns |
 |----------|-----------------|
 | `GET /health` | status, model version, dataset name |
+| `GET /history/{user_id}?k=5` | the films that user rated highest, so you can see why the picks make sense |
 | `GET /recommend/{user_id}?k=10` | top-k unseen items. Unknown users get the most popular items (`strategy: "popular"`) |
 | `GET /similar/{item_id}?k=10` | the k nearest items by embedding cosine similarity. 404 for an unknown item |
 

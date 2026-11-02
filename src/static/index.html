@@ -4,150 +4,177 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Recommendation Engine</title>
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f7f5f0; --fg: #141414; --fg-2: rgba(20,20,20,.62); --fg-3: rgba(20,20,20,.42);
-    --line: rgba(20,20,20,.14); --accent: #1f3dd6;
-    --serif: "Fraunces", Georgia, serif; --sans: "Inter", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+    --bg: #f6f4ef; --surface: #ffffff; --fg: #15151a; --fg-2: rgba(21,21,26,.64); --fg-3: rgba(21,21,26,.45);
+    --line: rgba(21,21,26,.12); --accent: #e5484d;
+    --serif: "Fraunces", Georgia, serif; --sans: "Inter", system-ui, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #0c0c0c; --fg: #f1efe9; --fg-2: rgba(241,239,233,.64); --fg-3: rgba(241,239,233,.42); --line: rgba(241,239,233,.16); --accent: #8ea2ff; }
+    :root { --bg: #101014; --surface: #18181d; --fg: #f4f2ec; --fg-2: rgba(244,242,236,.66); --fg-3: rgba(244,242,236,.45); --line: rgba(244,242,236,.14); --accent: #ff6b70; }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--fg); }
-  body { font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
-  ::selection { background: var(--accent); color: var(--bg); }
-  a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 4px; }
+  body { font: 400 16px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-underline-offset: 4px; text-decoration-color: var(--line); }
   a:hover { text-decoration-color: currentColor; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
 
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
-  .label { font: 500 11px/1.3 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--fg-3); }
+  nav.top { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; font-size: 14px; }
+  nav.top .brand { font-weight: 600; letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; }
+  nav.top .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  nav.top .links { display: flex; gap: 20px; color: var(--fg-2); }
 
-  header { display: flex; justify-content: space-between; align-items: baseline; padding: 28px 0; border-bottom: 1px solid var(--line); }
-  header .name { font: 500 15px var(--sans); letter-spacing: -.01em; }
+  .hero { padding: clamp(28px, 6vw, 64px) 0 28px; }
+  h1 { font: 400 clamp(38px, 6.5vw, 72px)/1 var(--serif); letter-spacing: -.03em; margin: 0 0 14px; }
+  .sub { color: var(--fg-2); max-width: 36rem; margin: 0 0 28px; }
+  .picker { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .picker label { font-size: 14px; color: var(--fg-2); }
+  input { width: 92px; font: 600 16px var(--sans); padding: 12px 16px; background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; }
+  .go { font: 600 15px var(--sans); padding: 12px 24px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; cursor: pointer; transition: transform .15s; }
+  .go:hover { transform: translateY(-1px); }
+  .hint { width: 100%; margin: 4px 0 0; font-size: 13px; color: var(--fg-3); }
 
-  .hero { padding: clamp(48px, 9vw, 104px) 0 clamp(40px, 6vw, 72px); }
-  h1 { font: 400 clamp(38px, 7vw, 84px)/.98 var(--serif); letter-spacing: -.035em; margin: 0 0 28px; max-width: 14ch; }
-  h1 em { font-style: italic; color: var(--fg-3); }
-  .sub { max-width: 34rem; color: var(--fg-2); margin: 0; }
+  section.block { padding: 28px 0 8px; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  h2 { font: 400 24px/1.2 var(--serif); letter-spacing: -.02em; margin: 0; }
+  .back { font: 500 14px var(--sans); background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; }
+  .back:hover { text-decoration: underline; }
 
-  .demo { border-top: 1px solid var(--line); padding: 32px 0 56px; display: grid; grid-template-columns: 240px 1fr; gap: 40px; }
-  .controls label { display: block; margin-bottom: 12px; }
-  .row { display: flex; gap: 8px; }
-  input { width: 84px; font: 500 16px var(--mono); padding: 11px 14px; background: transparent; color: var(--fg); border: 1px solid var(--line); border-radius: 999px; }
-  .go { font: 500 14px var(--sans); padding: 11px 22px; border: 0; border-radius: 999px; background: var(--fg); color: var(--bg); cursor: pointer; transition: opacity .2s; }
-  .go:hover { opacity: .82; }
-  .hint { margin: 14px 0 0; font-size: 13px; color: var(--fg-3); }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .grid.small { grid-template-columns: repeat(5, 1fr); }
+  .card { --h: 210; position: relative; display: flex; flex-direction: column; justify-content: space-between; text-align: left; min-height: 188px; padding: 14px; border: 0; border-radius: 16px; color: #fff; cursor: pointer;
+    background: linear-gradient(160deg, hsl(var(--h) 52% 36%), hsl(var(--h) 48% 22%)); transition: transform .2s, box-shadow .2s; animation: rise .45s ease both; font-family: var(--sans); }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.22); }
+  .card .rank { font-size: 12px; font-weight: 600; opacity: .7; letter-spacing: .06em; }
+  .card .title { font: 400 19px/1.15 var(--serif); letter-spacing: -.01em; margin: 10px 0 4px; }
+  .card .year { font-size: 12px; opacity: .72; }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+  .card .tag { font-size: 10.5px; font-weight: 500; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.16); }
+  .grid.small .card { min-height: 128px; }
+  .grid.small .card .title { font-size: 15px; }
+  .grid.static .card { cursor: default; }
+  .grid.static .card:hover { transform: none; box-shadow: none; }
+  .stars { font-size: 12px; letter-spacing: .08em; opacity: .9; }
 
-  .results ol { list-style: none; margin: 0; padding: 0; }
-  .results h2 { font: 400 22px/1.2 var(--serif); letter-spacing: -.02em; margin: 0 0 16px; }
-  .results li { display: grid; grid-template-columns: 36px 1fr auto; align-items: baseline; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); animation: rise .45s ease both; }
-  .results li:last-child { border-bottom: 1px solid var(--line); }
-  .results .idx { font: 400 12px var(--mono); color: var(--fg-3); }
-  .results .more { font: 500 12px var(--mono); background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; letter-spacing: .04em; }
-  .results .more:hover { text-decoration: underline; }
-  .empty { color: var(--fg-3); }
-  .error { color: #c0392b; }
-  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .status { color: var(--fg-3); padding: 24px 0; }
+  .error { color: #c0392b; padding: 24px 0; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-  .evidence { border-top: 1px solid var(--line); padding: 40px 0 24px; }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 20px; }
-  .num { font: 400 clamp(40px, 6vw, 64px)/1 var(--serif); letter-spacing: -.04em; margin: 8px 0 6px; }
-  .vs { font-size: 13px; color: var(--fg-2); }
-  .note { margin: 28px 0 0; font-size: 13px; color: var(--fg-3); max-width: 44rem; }
+  .evidence { margin-top: 48px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px; }
+  .evidence h3 { margin: 0 0 4px; font: 400 22px var(--serif); letter-spacing: -.02em; }
+  .evidence .lead { margin: 0 0 22px; color: var(--fg-2); font-size: 14px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .stat .k { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); }
+  .stat .num { font: 400 clamp(36px, 5vw, 52px)/1.05 var(--serif); letter-spacing: -.03em; margin: 6px 0 4px; }
+  .stat .vs { font-size: 13px; color: var(--fg-2); }
+  .note { margin: 20px 0 0; font-size: 12.5px; color: var(--fg-3); }
 
-  footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 28px 0 48px; border-top: 1px solid var(--line); margin-top: 40px; font-size: 14px; color: var(--fg-2); }
+  footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 32px 0 48px; font-size: 14px; color: var(--fg-2); }
   footer nav { display: flex; gap: 20px; }
 
-  @media (max-width: 720px) {
-    .demo { grid-template-columns: 1fr; gap: 28px; }
-    .stats { grid-template-columns: 1fr; gap: 28px; }
-    header .label { display: none; }
+  @media (max-width: 860px) { .grid, .grid.small { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) {
+    .grid, .grid.small { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stats { grid-template-columns: 1fr; }
+    .evidence { padding: 20px; }
   }
-  @media (prefers-reduced-motion: reduce) { .results li { animation: none; } .go { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .card, .go { animation: none; transition: none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <span class="name">Recommendation Engine</span>
-    <span class="label">TensorFlow &middot; BPR &middot; FastAPI</span>
-  </header>
+  <nav class="top">
+    <span class="brand"><span class="dot"></span>Recommendation Engine</span>
+    <span class="links"><a href="https://github.com/Onkar-Gupta/recommendation-engine">Source</a><a href="/docs">API docs</a></span>
+  </nav>
 
-  <section class="hero">
-    <h1>Built to rank well, <em>not just to rate well.</em></h1>
-    <p class="sub">A recommender trained to put the right films first for each person, then served live. Pick a user and watch it work.</p>
-  </section>
-
-  <section class="demo">
-    <div class="controls">
-      <label class="label" for="user">User, 1 to 943</label>
-      <div class="row">
-        <input id="user" type="number" min="1" value="1" inputmode="numeric">
-        <button class="go" id="go">Recommend</button>
-      </div>
+  <header class="hero">
+    <h1>Recommendations you can test.</h1>
+    <p class="sub">Built on MovieLens, scored against the full catalogue. Try it, then read the numbers.</p>
+    <div class="picker">
+      <label for="user">User number (1 to 943)</label>
+      <input id="user" type="number" min="1" value="1" inputmode="numeric">
+      <button class="go" id="go">Recommend</button>
       <p class="hint">A number above 943 is a brand-new user, who gets the most popular films.</p>
     </div>
-    <div class="results" id="out" aria-live="polite">
-      <p class="empty">Results appear here.</p>
-    </div>
-  </section>
+  </header>
+
+  <div id="out" aria-live="polite"></div>
 
   <section class="evidence">
-    <span class="label">Measured, not claimed</span>
+    <h3>Measured, not claimed</h3>
+    <p class="lead">Compared with a standard TruncatedSVD baseline on the same data.</p>
     <div class="stats">
-      <div><span class="label">NDCG@10</span><div class="num">0.296</div><div class="vs">TruncatedSVD baseline: 0.225</div></div>
-      <div><span class="label">Recall@10</span><div class="num">0.237</div><div class="vs">TruncatedSVD baseline: 0.153</div></div>
-      <div><span class="label">Catalogue coverage</span><div class="num">24.4%</div><div class="vs">TruncatedSVD baseline: 20.7%</div></div>
+      <div class="stat"><div class="k">NDCG@10</div><div class="num">0.296</div><div class="vs">Baseline: 0.225</div></div>
+      <div class="stat"><div class="k">Recall@10</div><div class="num">0.237</div><div class="vs">Baseline: 0.153</div></div>
+      <div class="stat"><div class="k">Catalogue coverage</div><div class="num">24.4%</div><div class="vs">Baseline: 20.7%</div></div>
     </div>
-    <p class="note">MovieLens 100K, ranked against the full catalogue of 1,682 films for 928 users. Numbers come from <code>reports/metrics.json</code>, written by the training code in this repo.</p>
+    <p class="note">MovieLens 100K, ranked against all 1,682 films for 928 users. Figures come from reports/metrics.json, written by this repo's training code.</p>
   </section>
 
   <footer>
     <span>Built by Onkar Gupta</span>
-    <nav>
-      <a href="https://github.com/Onkar-Gupta/recommendation-engine">Source</a>
-      <a href="https://linkedin.com/in/onkar-gupta-ai">LinkedIn</a>
-      <a href="/docs">API docs</a>
-    </nav>
+    <nav><a href="https://github.com/Onkar-Gupta/recommendation-engine">Source</a><a href="https://linkedin.com/in/onkar-gupta-ai">LinkedIn</a></nav>
   </footer>
 </div>
 <script>
 const out = document.getElementById("out");
+const HUES = { Action: 8, Adventure: 28, Animation: 285, "Children's": 320, Comedy: 42, Crime: 350, Documentary: 160,
+  Drama: 215, Fantasy: 265, "Film-Noir": 230, Horror: 0, Musical: 300, Mystery: 245, Romance: 335, "Sci-Fi": 195, Thriller: 15, War: 100, Western: 24 };
+let currentUser = null;
 
-function render(heading, rows) {
-  out.innerHTML = "";
-  const h = document.createElement("h2");
-  h.textContent = heading;
-  const list = document.createElement("ol");
-  rows.forEach((r, i) => {
-    const li = document.createElement("li");
-    li.style.animationDelay = i * 35 + "ms";
-    const idx = document.createElement("span");
-    idx.className = "idx";
-    idx.textContent = String(i + 1).padStart(2, "0");
-    const name = document.createElement("span");
-    name.textContent = r.title || "Item " + r.item_id;
-    const more = document.createElement("button");
-    more.className = "more";
-    more.textContent = "SIMILAR →";
-    more.onclick = () => findSimilar(r);
-    li.append(idx, name, more);
-    list.appendChild(li);
-  });
-  out.append(h, list);
+function splitTitle(raw) {
+  const m = /^(.*?)\s*\((\d{4})\)$/.exec(raw || "");
+  return m ? { name: m[1], year: m[2] } : { name: raw || "Untitled", year: "" };
 }
 
-function showError(message) {
+function card(item, opts) {
+  const { name, year } = splitTitle(item.title || "Item " + item.item_id);
+  const el = document.createElement(opts.onClick ? "button" : "div");
+  el.className = "card";
+  el.style.setProperty("--h", HUES[(item.genres || [])[0]] ?? 215);
+  el.style.animationDelay = opts.delay + "ms";
+  if (opts.onClick) { el.onclick = opts.onClick; el.setAttribute("aria-label", "More like " + name); }
+  const rank = document.createElement("div");
+  rank.className = "rank";
+  rank.textContent = opts.rating ? "★".repeat(Math.round(item.score)) : String(opts.rank).padStart(2, "0");
+  rank.classList.toggle("stars", !!opts.rating);
+  const body = document.createElement("div");
+  const t = document.createElement("div"); t.className = "title"; t.textContent = name;
+  const y = document.createElement("div"); y.className = "year"; y.textContent = year;
+  const tags = document.createElement("div"); tags.className = "tags";
+  (item.genres || []).slice(0, 2).forEach(g => { const s = document.createElement("span"); s.className = "tag"; s.textContent = g; tags.appendChild(s); });
+  body.append(t, y, tags);
+  el.append(rank, body);
+  return el;
+}
+
+function section(title, items, opts, backLabel, onBack) {
+  const sec = document.createElement("section");
+  sec.className = "block";
+  const head = document.createElement("div"); head.className = "head";
+  const h = document.createElement("h2"); h.textContent = title;
+  head.appendChild(h);
+  if (onBack) { const b = document.createElement("button"); b.className = "back"; b.textContent = backLabel; b.onclick = onBack; head.appendChild(b); }
+  const grid = document.createElement("div");
+  grid.className = "grid" + (opts.small ? " small static" : "");
+  items.forEach((it, i) => grid.appendChild(card(it, {
+    rank: i + 1, delay: i * 40, rating: opts.rating,
+    onClick: opts.clickable ? () => showSimilar(it) : null,
+  })));
+  sec.append(head, grid);
+  return sec;
+}
+
+function message(text, cls) {
   out.innerHTML = "";
-  const p = document.createElement("p");
-  p.className = "error";
-  p.textContent = message;
-  out.appendChild(p);
+  const p = document.createElement("p"); p.className = cls; p.textContent = text; out.appendChild(p);
 }
 
 async function getJson(url) {
@@ -158,22 +185,30 @@ async function getJson(url) {
 
 async function recommend() {
   const user = document.getElementById("user").value;
-  if (!user) return showError("Please type a user number.");
+  if (!user) return message("Please type a user number.", "error");
+  message("Loading...", "status");
   try {
-    const data = await getJson("/recommend/" + user + "?k=10");
-    render(data.strategy === "popular" ? "New user: the most popular films" : "Top 10 for user " + user, data.recommendations);
-  } catch (e) { showError(e.message); }
+    const [rec, hist] = await Promise.all([getJson("/recommend/" + user + "?k=10"), getJson("/history/" + user + "?k=5")]);
+    currentUser = user;
+    out.innerHTML = "";
+    if (hist.history.length) out.appendChild(section("Because user " + user + " rated these highly", hist.history, { small: true, rating: true }));
+    const isNew = rec.strategy === "popular";
+    out.appendChild(section(isNew ? "New user: the most popular films" : "Top 10 for user " + user, rec.recommendations, { clickable: true }));
+  } catch (e) { message(e.message, "error"); }
 }
 
-async function findSimilar(row) {
+async function showSimilar(item) {
+  message("Loading...", "status");
   try {
-    const data = await getJson("/similar/" + row.item_id + "?k=10");
-    render("Similar to " + (row.title || "item " + row.item_id), data.similar);
-  } catch (e) { showError(e.message); }
+    const data = await getJson("/similar/" + item.item_id + "?k=10");
+    out.innerHTML = "";
+    out.appendChild(section("More like " + splitTitle(item.title).name, data.similar, { clickable: true }, "← Back to user " + currentUser, recommend));
+  } catch (e) { message(e.message, "error"); }
 }
 
 document.getElementById("go").onclick = recommend;
 document.getElementById("user").addEventListener("keydown", e => { if (e.key === "Enter") recommend(); });
+recommend();
 </script>
 </body>
 </html>
