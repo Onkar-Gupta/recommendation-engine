@@ -23,6 +23,18 @@ make all                    # Windows: .\run.ps1 all   (setup, download data, tr
 
 ![The web page: pick a user, see their top films](docs/images/screenshot.png)
 
+## Install as a command
+
+```bash
+pip install "rec-engine[train] @ git+https://github.com/Onkar-Gupta/recommendation-engine.git"
+
+rec-engine download-data            # MovieLens 100K, or skip it and use your own CSV
+rec-engine train                    # or: rec-engine train --data my_ratings.csv
+rec-engine serve                    # API and web page on http://127.0.0.1:8000
+```
+
+Leave out `[train]` to install only the server (no TensorFlow, about a quarter of the memory). `rec-engine init` writes a `config.yaml` you can edit, such as the column names of your CSV. Run `rec-engine --help` for everything.
+
 ## What it does
 
 You give it user, item and rating data. It learns each user's taste with a TensorFlow matrix factorisation model trained to rank, and serves recommendations over a FastAPI service with a small web page on top.
@@ -42,7 +54,7 @@ MovieLens 100K. Per-user 80/20 split, "relevant" means a test rating of 4 or mor
 | TruncatedSVD (scikit-learn) | 1.040 | 0.171 | 0.153 | 0.225 | 20.7% |
 | **TensorFlow MF, BPR-trained (this repo)** | 2.561 | **0.213** | **0.237** | **0.296** | **24.4%** |
 
-Every number comes from `reports/metrics.json`, written by `python -m src.train` and `python -m src.baselines`. `scripts/sweep.py` is the 10-trial hyperparameter sweep behind the final config.
+Every number comes from `reports/metrics.json`, written by `python -m rec_engine.train` and `python -m rec_engine.baselines`. `scripts/sweep.py` is the 10-trial hyperparameter sweep behind the final config.
 
 **Why is RMSE higher?** BPR teaches the model the order of films, not calibrated star ratings, so its predicted ratings drift away from the real 1 to 5 scale. For a system whose job is "what should I show first", ranking quality is the metric that matters. RMSE is reported anyway so nobody has to wonder.
 
@@ -80,6 +92,7 @@ data_loader  --> split per user (80/20) --> BPR training (TensorFlow) --> models
 ```
 recommendation-engine/
 ├── config.yaml            # every path, hyperparameter and column name
+├── pyproject.toml         # makes it pip-installable (rec-engine command)
 ├── Makefile, run.ps1      # one-command targets (Unix, Windows)
 ├── Dockerfile
 ├── requirements.txt, requirements-serve.txt, requirements-notebook.txt
@@ -87,12 +100,15 @@ recommendation-engine/
 ├── notebooks/             # exploration.ipynb with saved outputs
 ├── docs/images/           # screenshot, charts and the artwork sheet
 ├── scripts/               # download_data.py, sweep.py
-├── src/
+├── rec_engine/
 │   ├── data_loader.py     # load any user/item/rating CSV, map ids, split
 │   ├── baselines.py       # Popularity and TruncatedSVD
 │   ├── model.py           # the TensorFlow matrix factorisation model
 │   ├── train.py           # BPR training, evaluation, saving
 │   ├── evaluate.py        # RMSE, Precision, Recall, NDCG, coverage
+│   ├── cli.py             # the rec-engine command
+│   ├── download.py        # MovieLens download
+│   ├── default_config.yaml  # copy of config.yaml shipped inside the package
 │   ├── serve.py           # FastAPI app (NumPy and pandas only)
 │   ├── weights.py         # save the trained numbers, score from them without TensorFlow
 │   ├── middleware.py      # optional API key check and usage log
@@ -117,14 +133,16 @@ All settings live in `config.yaml`. The ones you will touch most:
 
 Any CSV with a user, an item, a rating and a timestamp works. The e-commerce sample in `data/sample/ecommerce_sample.csv` calls its item column `product_id`, so it is a good worked example.
 
-1. In `config.yaml`, point the column names at your CSV (here: `data.columns.item: product_id`).
-2. Train: `python -m src.train --data data/sample/ecommerce_sample.csv`
-3. In `config.yaml`, set `serving.ratings_path` to the same file and leave `serving.item_titles_path` empty.
-4. Serve: `uvicorn src.serve:create_app --factory`
+```bash
+rec-engine init                                  # writes config.yaml
+# edit config.yaml: set data.columns.item to product_id
+rec-engine train --data data/sample/ecommerce_sample.csv
+rec-engine serve --ratings data/sample/ecommerce_sample.csv
+```
 
-Or train in one go with `make train-custom DATA=path/to/my.csv` (Windows: `.\run.ps1 train-custom -Data path\to\my.csv`).
+`--ratings` tells the server which file the model was trained on, so it knows what each user has already seen. Without a titles file, the web page shows "Item 50035" instead of a film name and a plain icon instead of genre artwork.
 
-Without a titles file, the web page shows "Item 50035" instead of a film name and a plain icon instead of genre artwork.
+From a clone of the repo, `make train-custom DATA=path/to/my.csv` (Windows: `.un.ps1 train-custom -Data path	o\my.csv`) does the training step, and `config.yaml` can be edited by hand.
 
 ## API
 
@@ -185,7 +203,8 @@ A rebuild of my 2024 SVD-based recommender from the Department of Science and Te
 - [x] Free demo on Hugging Face Spaces (static, saved answers)
 - [x] Live API on a free host (Render, free plan)
 - [x] Serve without TensorFlow (about 75% less memory)
-- [ ] pip-installable command line tool
+- [x] pip-installable command line tool (`rec-engine`)
+- [ ] Publish to PyPI
 - [ ] Implicit feedback support (clicks and purchases without ratings)
 - [ ] Hybrid model using item and user features
 - [ ] Real-time model updates

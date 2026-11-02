@@ -16,6 +16,33 @@ jobs:
       - run: ruff check .
       - run: pytest tests/ -v
 
+  # Installs the package into a clean environment, the way a stranger would, and uses the command.
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: install the server only (no TensorFlow)
+        run: |
+          python -m venv /tmp/clean
+          /tmp/clean/bin/pip install .
+          /tmp/clean/bin/rec-engine --version
+          /tmp/clean/bin/python -c "from importlib.resources import files; r = files('rec_engine'); assert all(r.joinpath(p).is_file() for p in ['default_config.yaml', 'static/index.html', 'static/genres/Comedy.png'])"
+          ! /tmp/clean/bin/rec-engine train
+      - name: install the training extra, train on a CSV and serve it
+        run: |
+          /tmp/clean/bin/pip install ".[train]"
+          mkdir /tmp/work && cd /tmp/work
+          /tmp/clean/bin/rec-engine init
+          /tmp/clean/bin/rec-engine train --data "$GITHUB_WORKSPACE/data/sample/ratings_sample.csv"
+          /tmp/clean/bin/rec-engine serve --ratings "$GITHUB_WORKSPACE/data/sample/ratings_sample.csv" &
+          for i in $(seq 1 60); do curl -sf localhost:8000/health && break; sleep 2; done
+          curl -sf "localhost:8000/recommend/1?k=3" | grep -q personalized
+          curl -sf localhost:8000/ | grep -q "Recommendation Engine"
+          pkill -f "rec-engine serve" || true
+
   # Runs the Makefile targets and the Docker container the way a new user would.
   make-and-docker:
     runs-on: ubuntu-latest
@@ -36,7 +63,7 @@ jobs:
           for i in $(seq 1 60); do curl -sf localhost:8000/health && break; sleep 2; done
           curl -sf "localhost:8000/recommend/1?k=3" | grep -q personalized
           curl -sf localhost:8000/ | grep -q "Recommendation Engine"
-          pkill -f "uvicorn src.serve" || true
+          pkill -f "uvicorn rec_engine.serve" || true
 
       - name: make train-custom works on the movie sample
         run: make train-custom DATA=data/sample/ratings_sample.csv
