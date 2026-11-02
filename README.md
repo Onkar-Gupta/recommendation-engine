@@ -3,8 +3,11 @@
 ![tests](https://github.com/Onkar-Gupta/recommendation-engine/actions/workflows/tests.yml/badge.svg)
 ![python](https://img.shields.io/badge/python-3.11-blue)
 ![licence](https://img.shields.io/badge/licence-MIT-green)
+[![live demo](https://img.shields.io/badge/live%20demo-Hugging%20Face-yellow)](https://huggingface.co/spaces/Onkar-Gupta-HF/recommendation-engine)
 
 A recommender tutorial that does not stop at a notebook: data to a trained TensorFlow model to a live API, in one command. It beats a standard scikit-learn SVD baseline on every ranking metric, not just rating accuracy.
+
+**Try it now, no install:** [live demo on Hugging Face](https://huggingface.co/spaces/Onkar-Gupta-HF/recommendation-engine). It shows saved answers from the model's API, so it runs without a server and never sleeps.
 
 ## Quick Start
 
@@ -175,7 +178,9 @@ A rebuild of my 2024 SVD-based recommender from the Department of Science and Te
 
 - [x] FastAPI serving, web page and Docker
 - [x] Hyperparameter sweep, NDCG@10 and catalogue coverage metrics
-- [ ] Free live demo on Hugging Face Spaces
+- [x] Free demo on Hugging Face Spaces (static, saved answers)
+- [ ] Live API on a free host (needs a lighter server, see below)
+- [ ] Serve without TensorFlow, to cut memory use and fit free hosts
 - [ ] pip-installable command line tool
 - [ ] Implicit feedback support (clicks and purchases without ratings)
 - [ ] Hybrid model using item and user features
