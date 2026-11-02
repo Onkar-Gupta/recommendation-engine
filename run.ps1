@@ -17,7 +17,7 @@ switch ($Target) {
     "data"         { Run $py @("scripts/download_data.py") }
     "train"        { Run $py @("-m", "src.train", "--config", "config.yaml") }
     "train-custom" { if (-not $Data) { throw "Pass -Data path\to\my.csv" }; Run $py @("-m", "src.train", "--config", "config.yaml", "--data", $Data) }
-    "serve"        { Run $py @("-m", "uvicorn", "src.serve:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000") }
+    "serve"        { Run $py @("-m", "uvicorn", "src.serve:create_app", "--factory", "--host", "127.0.0.1", "--port", "8000") }
     "test"         { Run $py @("-m", "pytest", "tests/") }
     "lint"         { Run $py @("-m", "ruff", "check", ".") }
     "all"          { & $PSCommandPath setup; & $PSCommandPath data; & $PSCommandPath train; & $PSCommandPath serve }

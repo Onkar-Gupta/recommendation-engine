@@ -18,7 +18,7 @@ train-custom:
 	$(PY) -m src.train --config config.yaml --data $(DATA)
 
 serve:
-	$(PY) -m uvicorn src.serve:create_app --factory --host 0.0.0.0 --port 8000
+	$(PY) -m uvicorn src.serve:create_app --factory --host 127.0.0.1 --port 8000
 
 test:
 	$(PY) -m pytest tests/
