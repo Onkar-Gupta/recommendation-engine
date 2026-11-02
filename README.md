@@ -79,7 +79,7 @@ recommendation-engine/
 ├── config.yaml            # every path, hyperparameter and column name
 ├── Makefile, run.ps1      # one-command targets (Unix, Windows)
 ├── Dockerfile
-├── requirements.txt, requirements-notebook.txt
+├── requirements.txt, requirements-serve.txt, requirements-notebook.txt
 ├── data/sample/           # small synthetic CSVs: movie-like and e-commerce-like
 ├── notebooks/             # exploration.ipynb with saved outputs
 ├── docs/images/           # screenshot, charts and the artwork sheet
@@ -90,7 +90,8 @@ recommendation-engine/
 │   ├── model.py           # the TensorFlow matrix factorisation model
 │   ├── train.py           # BPR training, evaluation, saving
 │   ├── evaluate.py        # RMSE, Precision, Recall, NDCG, coverage
-│   ├── serve.py           # FastAPI app
+│   ├── serve.py           # FastAPI app (NumPy and pandas only)
+│   ├── weights.py         # save the trained numbers, score from them without TensorFlow
 │   ├── middleware.py      # optional API key check and usage log
 │   └── static/            # the web page and genre artwork
 └── tests/
@@ -141,7 +142,7 @@ curl "http://127.0.0.1:8000/recommend/1?k=3"
 
 ## Docker
 
-The image holds code only. It reads the model and data you trained locally, so one image serves any trained model.
+The image holds code only. It reads the model and data you trained locally, so one image serves any trained model. The server runs on NumPy and pandas without TensorFlow (`requirements-serve.txt`), which keeps the image small and the memory use low (about 116 MB in my test, against about 464 MB with TensorFlow).
 
 ```bash
 make train
@@ -179,8 +180,8 @@ A rebuild of my 2024 SVD-based recommender from the Department of Science and Te
 - [x] FastAPI serving, web page and Docker
 - [x] Hyperparameter sweep, NDCG@10 and catalogue coverage metrics
 - [x] Free demo on Hugging Face Spaces (static, saved answers)
-- [ ] Live API on a free host (needs a lighter server, see below)
-- [ ] Serve without TensorFlow, to cut memory use and fit free hosts
+- [ ] Live API on a free host
+- [x] Serve without TensorFlow (about 75% less memory)
 - [ ] pip-installable command line tool
 - [ ] Implicit feedback support (clicks and purchases without ratings)
 - [ ] Hybrid model using item and user features
