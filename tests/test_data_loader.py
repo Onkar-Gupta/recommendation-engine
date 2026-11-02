@@ -64,3 +64,17 @@ def test_dataset_stats(path, columns):
     stats = dataset_stats(df)
     assert stats["n_ratings"] == len(df)
     assert 0 <= stats["sparsity"] <= 1
+
+
+def test_load_item_genres_reads_flags_and_skips_unknown(tmp_path):
+    from src.data_loader import MOVIELENS_GENRES, load_item_genres
+
+    flags = ["0"] * len(MOVIELENS_GENRES)
+    flags[MOVIELENS_GENRES.index("Comedy")] = "1"
+    flags[MOVIELENS_GENRES.index("Romance")] = "1"
+    line = "|".join(["7", "Test Film (1999)", "01-Jan-1999", "", "http://x"] + flags)
+    path = tmp_path / "u.item"
+    path.write_text(line + "\n", encoding="latin-1")
+
+    assert load_item_genres(path) == {7: ["Comedy", "Romance"]}
+    assert load_item_genres(tmp_path / "missing") == {}

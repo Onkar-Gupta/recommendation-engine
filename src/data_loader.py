@@ -94,6 +94,32 @@ def load_item_titles(path):
     return titles
 
 
+# MovieLens 100K u.item ends with 19 genre flags (0/1), in this fixed order.
+MOVIELENS_GENRES = [
+    "Unknown", "Action", "Adventure", "Animation", "Children's", "Comedy", "Crime", "Documentary", "Drama",
+    "Fantasy", "Film-Noir", "Horror", "Musical", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western",
+]
+
+
+def load_item_genres(path):
+    """Load genres from MovieLens u.item into {item_id: [genre, ...]}.
+    Optional like load_item_titles: returns {} if the file does not exist.
+    """
+    path = Path(path)
+    if not path.exists():
+        return {}
+
+    genres = {}
+    with open(path, encoding="latin-1") as f:
+        for line in f:
+            parts = line.rstrip("\n").split("|")
+            flags = parts[-len(MOVIELENS_GENRES):]
+            if len(parts) > len(MOVIELENS_GENRES) and len(flags) == len(MOVIELENS_GENRES):
+                names = [g for g, flag in zip(MOVIELENS_GENRES, flags) if flag == "1" and g != "Unknown"]
+                genres[int(parts[0])] = names
+    return genres
+
+
 def dataset_stats(df):
     """Basic stats used in the README and as a sanity check after loading."""
     n_users = df["user_id"].nunique()

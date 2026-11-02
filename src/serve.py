@@ -15,7 +15,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 import src.model  # noqa: F401  Must run before load_model: registers the custom Keras class.
 from src.baselines import PopularityBaseline
-from src.data_loader import load_config, load_item_titles, load_ratings
+from src.data_loader import (
+    load_config,
+    load_item_genres,
+    load_item_titles,
+    load_ratings,
+)
 from src.middleware import make_auth_middleware, make_usage_tracking_middleware
 from src.train import make_recommend_fn, score_all
 
@@ -40,13 +45,17 @@ def create_app(config_path="config.yaml"):
         idx for item_id, idx in item2idx.items() if support.get(item_id, 0) < config["evaluation"]["min_item_support"]
     }
     titles = load_item_titles(serving["item_titles_path"])
+    genres = load_item_genres(serving["item_titles_path"])  # same u.item file holds titles and genres
+    liked = ratings.sort_values(["rating", "timestamp"], ascending=False).groupby("user_id")[["item_id", "rating"]].apply(
+        lambda g: list(zip(g["item_id"], g["rating"]))
+    )
 
     score_matrix = score_all(model, len(user2idx), len(item2idx))
     recommend_fn = make_recommend_fn(score_matrix, user2idx, item2idx, idx2item, low_support)
     item_vectors = model.item_embedding.get_weights()[0]
 
     def to_item(item_id, score):
-        return {"item_id": int(item_id), "title": titles.get(item_id), "score": float(score)}
+        return {"item_id": int(item_id), "title": titles.get(item_id), "genres": genres.get(item_id, []), "score": float(score)}
 
     app = FastAPI(title="Recommendation Engine")
     # add_middleware puts the LAST one added outermost, so usage tracking wraps auth and logs rejected requests too.
@@ -64,6 +73,12 @@ def create_app(config_path="config.yaml"):
     @app.get("/health")
     def health():
         return {"status": "ok", "model_version": serving["model_version"], "dataset_name": serving["dataset_name"]}
+
+    @app.get("/history/{user_id}")
+    def history(user_id: int, k: int = Query(serving["default_k"])):
+        check_k(k)
+        # "score" is the user's own rating here. Unknown users simply have no history.
+        return {"user_id": user_id, "history": [to_item(i, r) for i, r in liked.get(user_id, [])[:k]]}
 
     @app.get("/recommend/{user_id}")
     def recommend(user_id: int, request: Request, k: int = Query(serving["default_k"])):

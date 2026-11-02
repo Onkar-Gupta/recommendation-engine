@@ -55,6 +55,13 @@ def test_root_serves_the_web_page(client):
     assert "Recommendation Engine" in response.text
 
 
+def test_history_lists_highest_rated_first_and_unknown_user_is_empty(client):
+    history = client.get("/history/1?k=5").json()["history"]
+    assert 0 < len(history) <= 5
+    assert history[0]["score"] >= history[-1]["score"]
+    assert client.get("/history/999999").json()["history"] == []
+
+
 def test_known_user_gets_personalised_recommendations(client):
     body = client.get("/recommend/1?k=5").json()
     assert body["strategy"] == "personalized"
