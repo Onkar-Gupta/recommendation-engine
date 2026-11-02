@@ -1,0 +1,9 @@
+# Render Blueprint: a free web service that builds the hosted image (trains the model at build time).
+services:
+  - type: web
+    name: recommendation-engine
+    runtime: docker
+    plan: free
+    dockerfilePath: ./deploy/huggingface/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health

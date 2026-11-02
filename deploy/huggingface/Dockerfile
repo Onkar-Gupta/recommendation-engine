@@ -1,4 +1,5 @@
-# Hugging Face Space image. Build context is the repo root (or the staged copy made by push.ps1).
+# Hosted image (Hugging Face Docker Spaces, Render and similar). Build context is the repo root.
+# The port comes from the PORT environment variable that hosts set; it falls back to 7860.
 # Two stages: the first trains with TensorFlow, the second ships only the light NumPy server,
 # so the running container needs a fraction of the memory and disk.
 # MovieLens is downloaded and the model trained at build time, so neither is stored in the repo.
@@ -30,4 +31,4 @@ COPY --from=train --chown=user /build/models/mf_weights.npz /build/models/id_map
 COPY --from=train --chown=user /build/data/raw/ml-100k/u.data /build/data/raw/ml-100k/u.item ./data/raw/ml-100k/
 
 EXPOSE 7860
-CMD ["uvicorn", "src.serve:create_app", "--factory", "--host", "0.0.0.0", "--port", "7860"]
+CMD uvicorn src.serve:create_app --factory --host 0.0.0.0 --port ${PORT:-7860}

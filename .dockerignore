@@ -11,5 +11,4 @@ reports/
 logs/
 tests/
 notebooks/
-scripts/
 *.md

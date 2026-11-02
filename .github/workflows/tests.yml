@@ -74,3 +74,9 @@ jobs:
           curl -sf "localhost:7860/recommend/1?k=3" | grep -q personalized
           curl -sf localhost:7860/ | grep -q "Recommendation Engine"
           docker stop space
+          docker rm space
+          # Hosts such as Render set PORT themselves (default 10000); the image must follow it.
+          docker run -d -e PORT=10000 -p 10000:10000 --name space-port space-image
+          for i in $(seq 1 60); do curl -sf localhost:10000/health && break; sleep 2; done
+          curl -sf "localhost:10000/recommend/1?k=3" | grep -q personalized
+          docker stop space-port
