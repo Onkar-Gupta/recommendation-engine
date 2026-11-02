@@ -142,7 +142,8 @@ rec-engine serve --ratings data/sample/ecommerce_sample.csv
 
 `--ratings` tells the server which file the model was trained on, so it knows what each user has already seen. Without a titles file, the web page shows "Item 50035" instead of a film name and a plain icon instead of genre artwork.
 
-From a clone of the repo, `make train-custom DATA=path/to/my.csv` (Windows: `.un.ps1 train-custom -Data path	o\my.csv`) does the training step, and `config.yaml` can be edited by hand.
+From a clone of the repo, `make train-custom DATA=path/to/my.csv` (Windows: `.
+un.ps1 train-custom -Data path	o\my.csv`) does the training step, and `config.yaml` can be edited by hand.
 
 ## API
 
@@ -198,17 +199,13 @@ A rebuild of my 2024 SVD-based recommender from the Department of Science and Te
 
 ## Roadmap
 
-- [x] FastAPI serving, web page and Docker
-- [x] Hyperparameter sweep, NDCG@10 and catalogue coverage metrics
-- [x] Free demo on Hugging Face Spaces (static, saved answers)
-- [x] Live API on a free host (Render, free plan)
-- [x] Serve without TensorFlow (about 75% less memory)
-- [x] pip-installable command line tool (`rec-engine`)
 - [ ] Publish to PyPI
 - [ ] Implicit feedback support (clicks and purchases without ratings)
 - [ ] Hybrid model using item and user features
 - [ ] Real-time model updates
 - [ ] Hosted API tier
+
+Finished work is listed in the [releases](https://github.com/Onkar-Gupta/recommendation-engine/releases).
 
 ## Licence
 
