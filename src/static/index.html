@@ -47,10 +47,12 @@
   .grid.small { grid-template-columns: repeat(5, 1fr); }
   .item { display: block; width: 100%; padding: 0; background: none; border: 0; text-align: left; color: inherit; font: inherit; cursor: pointer; animation: rise .4s ease both; }
   .grid.static .item { cursor: default; }
-  .art { position: relative; aspect-ratio: 2 / 3; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; transition: border-color .2s; }
+  .art { position: relative; aspect-ratio: 219 / 240; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; transition: border-color .2s; }
   .item:hover .art { border-color: var(--fg); }
   .grid.static .item:hover .art { border-color: var(--line); }
   .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .badge.pic { background: #f5f6f0; }
+  .badge.pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .badge { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; background: color-mix(in srgb, var(--fg) 3%, transparent); }
   .ring { width: 66%; aspect-ratio: 1; border: 1.5px solid var(--fg); border-radius: 50%; display: grid; place-items: center; color: var(--fg); }
   .ring svg { width: 60%; height: 60%; transition: transform .35s ease; }
@@ -61,7 +63,7 @@
   .meta .sub2 { font-size: 12.5px; color: var(--fg-2); }
   .rank { font-size: 12px; color: var(--fg-2); margin-bottom: 2px; }
 
-  .art.loading, .ph .art { background: linear-gradient(100deg, var(--line) 30%, transparent 50%, var(--line) 70%) 0 0 / 200% 100%; animation: shimmer 1.4s linear infinite; }
+  .ph .art { background: linear-gradient(100deg, var(--line) 30%, transparent 50%, var(--line) 70%) 0 0 / 200% 100%; animation: shimmer 1.4s linear infinite; }
   .ph .line { height: 10px; border-radius: 3px; background: var(--line); margin-top: 10px; width: 80%; animation: pulse 1.4s ease-in-out infinite; }
   .ph .line.short { width: 45%; margin-top: 6px; }
   .ph .title-ph { height: 22px; width: 220px; border-radius: 3px; background: var(--line); animation: pulse 1.4s ease-in-out infinite; }
@@ -96,7 +98,7 @@
     .grid, .grid.small { grid-template-columns: repeat(2, 1fr); gap: 20px 12px; }
   }
   @media (max-width: 720px) { .metric { grid-template-columns: 1fr; } }
-  @media (prefers-reduced-motion: reduce) { .item, .art.loading, .ph .art, .ph .line, .ph .title-ph { animation: none; } .art, .fill, .ring svg { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .item, .ph .art, .ph .line, .ph .title-ph { animation: none; } .art, .fill, .ring svg { transition: none; } }
 </style>
 </head>
 <body>
@@ -137,8 +139,6 @@
     <p class="note">Data: MovieLens 100K. Source: reports/metrics.json.</p>
   </section>
 
-  <p class="note" id="credit" hidden>Posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
-
   <footer>
     <span>Built by Onkar Gupta</span>
     <nav><a href="https://github.com/Onkar-Gupta/recommendation-engine">Source</a><a href="https://linkedin.com/in/onkar-gupta-ai">LinkedIn</a></nav>
@@ -171,6 +171,18 @@ const ICONS = {
 };
 
 function badge(genre) {
+  const wrap = el("div", "badge pic");
+  const img = el("img");
+  // The artwork already carries its genre label.
+  img.src = "/static/genres/" + (genre || "Film").replace(/'/g, "") + ".png";
+  img.alt = genre || "Film";
+  img.loading = "lazy";
+  img.onerror = () => wrap.replaceWith(iconBadge(genre));
+  wrap.appendChild(img);
+  return wrap;
+}
+
+function iconBadge(genre) {
   const key = ICONS[genre] ? genre : "Film";
   const wrap = el("div", "badge");
   const ring = el("div", "ring");
@@ -203,17 +215,7 @@ function tile(item, opts) {
 
   const art = el("div", "art");
   const genre = (item.genres || [])[0] || "Film";
-  if (item.poster) {
-    const img = el("img");
-    document.getElementById("credit").hidden = false;
-    art.classList.add("loading");
-    img.onload = () => art.classList.remove("loading");
-    img.src = item.poster; img.alt = name; img.loading = "lazy";
-    img.onerror = () => { art.classList.remove("loading"); art.replaceChildren(badge(genre)); };
-    art.appendChild(img);
-  } else {
-    art.appendChild(badge(genre));
-  }
+  art.appendChild(badge(genre));
 
   const meta = el("div", "meta");
   if (opts.rank) meta.appendChild(el("div", "rank", String(opts.rank).padStart(2, "0")));

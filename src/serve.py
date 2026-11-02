@@ -11,6 +11,7 @@ import numpy as np
 import tensorflow as tf
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sklearn.metrics.pairwise import cosine_similarity
 
 import src.model  # noqa: F401  Must run before load_model: registers the custom Keras class.
@@ -63,6 +64,8 @@ def create_app(config_path="config.yaml"):
     # add_middleware puts the LAST one added outermost, so usage tracking wraps auth and logs rejected requests too.
     app.middleware("http")(make_auth_middleware(config["auth"]))
     app.middleware("http")(make_usage_tracking_middleware(serving["usage_log_path"]))
+
+    app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
     def check_k(k):
         if not 1 <= k <= serving["max_k"]:

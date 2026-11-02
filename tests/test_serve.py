@@ -71,6 +71,12 @@ def test_items_carry_their_poster_link(client):
     assert item["poster"] == f"https://example.com/{item['item_id']}.jpg"
 
 
+def test_genre_artwork_is_served(client):
+    response = client.get("/static/genres/Comedy.png")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/png"
+
+
 def test_known_user_gets_personalised_recommendations(client):
     body = client.get("/recommend/1?k=5").json()
     assert body["strategy"] == "personalized"
