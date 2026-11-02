@@ -11,14 +11,14 @@ data:
 	$(PY) scripts/download_data.py
 
 train:
-	$(PY) -m src.train --config config.yaml
+	$(PY) -m rec_engine.train --config config.yaml
 
 # make train-custom DATA=path/to/my.csv
 train-custom:
-	$(PY) -m src.train --config config.yaml --data $(DATA)
+	$(PY) -m rec_engine.train --config config.yaml --data $(DATA)
 
 serve:
-	$(PY) -m uvicorn src.serve:create_app --factory --host 127.0.0.1 --port 8000
+	$(PY) -m uvicorn rec_engine.serve:create_app --factory --host 127.0.0.1 --port 8000
 
 test:
 	$(PY) -m pytest tests/

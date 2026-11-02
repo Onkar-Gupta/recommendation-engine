@@ -9,10 +9,10 @@ WORKDIR /app
 COPY requirements-serve.txt .
 RUN pip install --no-cache-dir -r requirements-serve.txt
 
-COPY src ./src
+COPY rec_engine ./rec_engine
 COPY config.yaml .
 RUN mkdir logs && chown app logs
 
 USER app
 EXPOSE 8000
-CMD ["uvicorn", "src.serve:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "rec_engine.serve:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]

@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from src.data_loader import load_ratings, map_ids
-from src.train import generate_bpr_triplets
+from rec_engine.data_loader import load_ratings, map_ids
+from rec_engine.train import generate_bpr_triplets
 
 SAMPLE_COLUMNS = {"user": "user_id", "item": "item_id", "rating": "rating", "timestamp": "timestamp"}
 

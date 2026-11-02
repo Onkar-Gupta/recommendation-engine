@@ -1,7 +1,7 @@
 """FastAPI server for the trained recommender. Runs on NumPy and pandas only: no TensorFlow.
 
 Usage:
-    uvicorn src.serve:create_app --factory
+    uvicorn rec_engine.serve:create_app --factory
 """
 
 import json
@@ -12,21 +12,22 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.baselines import PopularityBaseline
-from src.data_loader import (
+from rec_engine.baselines import PopularityBaseline
+from rec_engine.data_loader import (
     load_config,
     load_item_genres,
     load_item_titles,
     load_ratings,
 )
-from src.evaluate import make_recommend_fn
-from src.middleware import make_auth_middleware, make_usage_tracking_middleware
-from src.weights import WEIGHTS_FILE, load_weights, unit_vectors
-from src.weights import score_matrix as compute_scores
+from rec_engine.evaluate import make_recommend_fn
+from rec_engine.middleware import make_auth_middleware, make_usage_tracking_middleware
+from rec_engine.weights import WEIGHTS_FILE, load_weights, unit_vectors
+from rec_engine.weights import score_matrix as compute_scores
 
 
-def create_app(config_path="config.yaml"):
-    config = load_config(config_path)
+def create_app(config_path="config.yaml", config=None):
+    """Build the app from a config file, or from an already-loaded settings dict (used by the CLI)."""
+    config = config if config is not None else load_config(config_path)
     serving = config["serving"]
     models_dir = Path(config["paths"]["models_dir"])
 

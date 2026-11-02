@@ -8,10 +8,10 @@ FROM python:3.11-slim AS train
 WORKDIR /build
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY src ./src
+COPY rec_engine ./rec_engine
 COPY scripts/download_data.py ./scripts/download_data.py
 COPY config.yaml .
-RUN python scripts/download_data.py && python -m src.train
+RUN python scripts/download_data.py && python -m rec_engine.train
 
 
 FROM python:3.11-slim
@@ -25,10 +25,10 @@ WORKDIR /home/user/app
 COPY --chown=user requirements-serve.txt .
 RUN pip install --no-cache-dir -r requirements-serve.txt
 
-COPY --chown=user src ./src
+COPY --chown=user rec_engine ./rec_engine
 COPY --chown=user config.yaml .
 COPY --from=train --chown=user /build/models/mf_weights.npz /build/models/id_mappings.json ./models/
 COPY --from=train --chown=user /build/data/raw/ml-100k/u.data /build/data/raw/ml-100k/u.item ./data/raw/ml-100k/
 
 EXPOSE 7860
-CMD uvicorn src.serve:create_app --factory --host 0.0.0.0 --port ${PORT:-7860}
+CMD uvicorn rec_engine.serve:create_app --factory --host 0.0.0.0 --port ${PORT:-7860}

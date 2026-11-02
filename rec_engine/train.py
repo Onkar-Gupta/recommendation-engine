@@ -2,8 +2,8 @@
 then evaluate against the same metrics as the baselines.
 
 Usage:
-    python -m src.train --config config.yaml
-    python -m src.train --data path/to/custom.csv --config config.yaml
+    python -m rec_engine.train --config config.yaml
+    python -m rec_engine.train --data path/to/custom.csv --config config.yaml
 """
 
 import argparse
@@ -15,15 +15,15 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 
-from src.data_loader import load_config, load_ratings, map_ids, split_train_test
-from src.evaluate import (
+from rec_engine.data_loader import load_config, load_ratings, map_ids, split_train_test
+from rec_engine.evaluate import (
     evaluate_recommendations,
     make_recommend_fn,
     rmse,
     write_metrics,
 )
-from src.model import build_model
-from src.weights import WEIGHTS_FILE, save_weights
+from rec_engine.model import build_model
+from rec_engine.weights import WEIGHTS_FILE, save_weights
 
 
 def set_seed(seed):

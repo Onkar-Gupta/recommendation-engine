@@ -5,7 +5,12 @@ prove the loader works on any user-item-rating CSV shape, not just MovieLens.
 import pandas as pd
 import pytest
 
-from src.data_loader import dataset_stats, load_ratings, map_ids, split_train_test
+from rec_engine.data_loader import (
+    dataset_stats,
+    load_ratings,
+    map_ids,
+    split_train_test,
+)
 
 MOVIE_COLUMNS = {"user": "user_id", "item": "item_id", "rating": "rating", "timestamp": "timestamp"}
 ECOMMERCE_COLUMNS = {"user": "user_id", "item": "product_id", "rating": "rating", "timestamp": "timestamp"}
@@ -67,7 +72,7 @@ def test_dataset_stats(path, columns):
 
 
 def test_load_item_genres_reads_flags_and_skips_unknown(tmp_path):
-    from src.data_loader import MOVIELENS_GENRES, load_item_genres
+    from rec_engine.data_loader import MOVIELENS_GENRES, load_item_genres
 
     flags = ["0"] * len(MOVIELENS_GENRES)
     flags[MOVIELENS_GENRES.index("Comedy")] = "1"
@@ -81,7 +86,7 @@ def test_load_item_genres_reads_flags_and_skips_unknown(tmp_path):
 
 
 def test_empty_titles_path_means_no_titles_not_a_crash():
-    from src.data_loader import load_item_genres, load_item_titles
+    from rec_engine.data_loader import load_item_genres, load_item_titles
 
     assert load_item_titles("") == {}
     assert load_item_genres("") == {}

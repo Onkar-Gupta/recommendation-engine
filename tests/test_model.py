@@ -2,8 +2,8 @@
 
 import tensorflow as tf
 
-from src.data_loader import load_ratings, map_ids
-from src.model import build_model, recommend
+from rec_engine.data_loader import load_ratings, map_ids
+from rec_engine.model import build_model, recommend
 
 SAMPLE_COLUMNS = {"user": "user_id", "item": "item_id", "rating": "rating", "timestamp": "timestamp"}
 

@@ -2,9 +2,9 @@
 
 import numpy as np
 
-from src.model import build_model
-from src.train import score_all
-from src.weights import load_weights, save_weights, score_matrix, unit_vectors
+from rec_engine.model import build_model
+from rec_engine.train import score_all
+from rec_engine.weights import load_weights, save_weights, score_matrix, unit_vectors
 
 
 def _random_model(n_users=7, n_items=11, dim=5):
@@ -32,7 +32,7 @@ def test_missing_weights_file_says_how_to_fix_it(tmp_path):
     try:
         load_weights(tmp_path / "nope.npz")
     except FileNotFoundError as error:
-        assert "python -m src.train" in str(error)
+        assert "python -m rec_engine.train" in str(error)
     else:
         raise AssertionError("expected FileNotFoundError")
 

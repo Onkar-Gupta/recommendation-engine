@@ -6,9 +6,9 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from src.data_loader import load_config
-from src.serve import create_app
-from src.train import train
+from rec_engine.data_loader import load_config
+from rec_engine.serve import create_app
+from rec_engine.train import train
 
 SAMPLE = "data/sample/ratings_sample.csv"
 
@@ -126,7 +126,7 @@ def test_server_never_loads_tensorflow(client, tmp_dir):
     import sys
 
     code = (
-        "import sys; from src.serve import create_app; "
+        "import sys; from rec_engine.serve import create_app; "
         f"create_app(r'{tmp_dir / 'config_auth_False.yaml'}'); "
         "loaded = [m for m in ('tensorflow', 'keras', 'sklearn') if m in sys.modules]; "
         "assert not loaded, loaded"

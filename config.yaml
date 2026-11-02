@@ -1,4 +1,4 @@
-# Central config. No hardcoded paths or hyperparameters anywhere else in src/.
+# Central config. No hardcoded paths or hyperparameters anywhere else in rec_engine/.
 
 paths:
   raw_data_dir: data/raw

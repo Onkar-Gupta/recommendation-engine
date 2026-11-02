@@ -22,8 +22,8 @@ if ($LASTEXITCODE -ne 0) { throw "Clone failed. Does the Space exist, and is the
 
 # Replace the Space's files with the ones it needs. A normal commit and push, never a force push.
 Get-ChildItem $work -Force | Where-Object { $_.Name -ne ".git" } | Remove-Item -Recurse -Force
-Copy-Item (Join-Path $repo "src") (Join-Path $work "src") -Recurse
-Get-ChildItem (Join-Path $work "src") -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+Copy-Item (Join-Path $repo "rec_engine") (Join-Path $work "rec_engine") -Recurse
+Get-ChildItem (Join-Path $work "rec_engine") -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
 New-Item -ItemType Directory (Join-Path $work "scripts") | Out-Null
 Copy-Item (Join-Path $repo "scripts\download_data.py") (Join-Path $work "scripts")
 Copy-Item (Join-Path $repo "config.yaml"), (Join-Path $repo "requirements.txt"), (Join-Path $repo "requirements-serve.txt") $work

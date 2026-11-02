@@ -4,7 +4,7 @@ import math
 
 import pandas as pd
 
-from src.evaluate import (
+from rec_engine.evaluate import (
     evaluate_recommendations,
     ndcg_at_k,
     precision_at_k,

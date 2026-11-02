@@ -18,8 +18,8 @@ sys.path.insert(0, str(ROOT))
 
 from fastapi.testclient import TestClient
 
-from src.data_loader import load_config
-from src.serve import create_app
+from rec_engine.data_loader import load_config
+from rec_engine.serve import create_app
 
 UNKNOWN_USER = 0  # any id the model has never seen returns the popular list
 REPO_API_DOCS = "https://github.com/Onkar-Gupta/recommendation-engine#api"
@@ -53,9 +53,9 @@ def export(config_path, out_dir):
         shutil.rmtree(out)
     out.mkdir(parents=True)
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
-    shutil.copytree(ROOT / "src/static/genres", out / "static/genres")
+    shutil.copytree(ROOT / "rec_engine/static/genres", out / "static/genres")
 
-    page = (ROOT / "src/static/index.html").read_text(encoding="utf-8")
+    page = (ROOT / "rec_engine/static/index.html").read_text(encoding="utf-8")
     page = page.replace('<link rel="icon"', '<meta name="static-data" content="data.json">\n<link rel="icon"', 1)
     page = page.replace('<a href="/docs">API docs</a>', f'<a href="{REPO_API_DOCS}">API docs</a>', 1)
     (out / "index.html").write_text(page, encoding="utf-8")

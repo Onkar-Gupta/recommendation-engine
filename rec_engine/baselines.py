@@ -4,8 +4,8 @@ the TensorFlow model (Prompt 4) something real to beat.
 
 import numpy as np
 
-from src.data_loader import load_config, load_ratings, split_train_test
-from src.evaluate import evaluate_recommendations, rmse, write_metrics
+from rec_engine.data_loader import load_config, load_ratings, split_train_test
+from rec_engine.evaluate import evaluate_recommendations, rmse, write_metrics
 
 
 class PopularityBaseline:

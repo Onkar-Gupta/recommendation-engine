@@ -15,9 +15,9 @@ function Run($exe, $arguments) {
 switch ($Target) {
     "setup"        { Run "python" @("-m", "venv", "venv"); Run $py @("-m", "pip", "install", "-r", "requirements.txt") }
     "data"         { Run $py @("scripts/download_data.py") }
-    "train"        { Run $py @("-m", "src.train", "--config", "config.yaml") }
-    "train-custom" { if (-not $Data) { throw "Pass -Data path\to\my.csv" }; Run $py @("-m", "src.train", "--config", "config.yaml", "--data", $Data) }
-    "serve"        { Run $py @("-m", "uvicorn", "src.serve:create_app", "--factory", "--host", "127.0.0.1", "--port", "8000") }
+    "train"        { Run $py @("-m", "rec_engine.train", "--config", "config.yaml") }
+    "train-custom" { if (-not $Data) { throw "Pass -Data path\to\my.csv" }; Run $py @("-m", "rec_engine.train", "--config", "config.yaml", "--data", $Data) }
+    "serve"        { Run $py @("-m", "uvicorn", "rec_engine.serve:create_app", "--factory", "--host", "127.0.0.1", "--port", "8000") }
     "test"         { Run $py @("-m", "pytest", "tests/") }
     "lint"         { Run $py @("-m", "ruff", "check", ".") }
     "all"          { & $PSCommandPath setup; & $PSCommandPath data; & $PSCommandPath train; & $PSCommandPath serve }

@@ -18,8 +18,8 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.data_loader import load_config
-from src.train import train
+from rec_engine.data_loader import load_config
+from rec_engine.train import train
 
 TMP_CONFIG_PATH = Path("reports/_sweep_tmp_config.yaml")
 SWEEP_OUT_PATH = Path("reports/sweep.json")

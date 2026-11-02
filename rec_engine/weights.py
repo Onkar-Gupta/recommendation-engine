@@ -27,7 +27,7 @@ def save_weights(model, path):
 def load_weights(path):
     path = Path(path)
     if not path.is_file():
-        raise FileNotFoundError(f"{path} not found. Train the model first: python -m src.train")
+        raise FileNotFoundError(f"{path} not found. Train the model first: rec-engine train (or python -m rec_engine.train)")
     with np.load(path) as data:
         return {name: data[name] for name in data.files}
 
