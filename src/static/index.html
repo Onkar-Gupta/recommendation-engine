@@ -61,14 +61,22 @@
   .error { color: #b3261e; }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-  .evidence { margin-top: 56px; padding: 32px 0; border-top: 1px solid var(--line); }
-  .evidence h3 { margin: 0 0 4px; font: 400 22px var(--serif); letter-spacing: -.02em; }
-  .evidence .lead { margin: 0 0 24px; color: var(--fg-2); }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .stat .k { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
-  .stat .num { font: 400 clamp(34px, 5vw, 48px)/1.05 var(--serif); letter-spacing: -.03em; margin: 6px 0 2px; }
-  .stat .vs { font-size: 13px; color: var(--fg-2); }
+  .evidence { margin-top: 56px; padding: 40px 0 32px; border-top: 1px solid var(--line); }
+  .evidence h3 { margin: 0 0 6px; font: 400 28px/1.15 var(--serif); letter-spacing: -.02em; }
+  .evidence .lead { margin: 0 0 32px; color: var(--fg-2); max-width: 38rem; }
+  .metric { display: grid; grid-template-columns: 220px 1fr; gap: 8px 32px; padding: 22px 0; border-top: 1px solid var(--line); align-items: center; }
+  .metric .name { font-weight: 500; }
+  .metric .what { font-size: 13px; color: var(--fg-2); margin-top: 2px; }
+  .bars { display: grid; gap: 10px; }
+  .bar { display: grid; grid-template-columns: 1fr 76px; gap: 14px; align-items: center; }
+  .track { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .fill { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--fg); transition: width 1.3s cubic-bezier(.2, .7, .2, 1); }
+  .bar.base .fill { background: var(--fg-2); opacity: .55; }
+  .bar .val { font: 400 22px/1 var(--serif); letter-spacing: -.02em; text-align: right; font-variant-numeric: tabular-nums; }
+  .bar.base .val { font-size: 17px; color: var(--fg-2); }
+  .bar .who { grid-column: 1 / -1; font-size: 12px; color: var(--fg-2); margin-bottom: -6px; }
   .note { margin: 24px 0 0; font-size: 12.5px; color: var(--fg-2); }
+  .stars { letter-spacing: .12em; color: var(--fg); }
 
   footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 24px 0 48px; border-top: 1px solid var(--line); font-size: 13px; color: var(--fg-2); }
   footer nav { display: flex; gap: 20px; }
@@ -76,9 +84,9 @@
   @media (max-width: 860px) { .grid, .grid.small { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 560px) {
     .grid, .grid.small { grid-template-columns: repeat(2, 1fr); gap: 20px 12px; }
-    .stats { grid-template-columns: 1fr; }
   }
-  @media (prefers-reduced-motion: reduce) { .item { animation: none; } .art { transition: none; } }
+  @media (max-width: 720px) { .metric { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .item { animation: none; } .art, .fill { transition: none; } }
 </style>
 </head>
 <body>
@@ -101,16 +109,25 @@
 
   <div id="out" aria-live="polite"></div>
 
-  <section class="evidence">
-    <h3>Measured, not claimed</h3>
-    <p class="lead">Compared with a standard TruncatedSVD baseline on the same data.</p>
-    <div class="stats">
-      <div class="stat"><div class="k">NDCG@10</div><div class="num">0.296</div><div class="vs">Baseline 0.225</div></div>
-      <div class="stat"><div class="k">Recall@10</div><div class="num">0.237</div><div class="vs">Baseline 0.153</div></div>
-      <div class="stat"><div class="k">Catalogue coverage</div><div class="num">24.4%</div><div class="vs">Baseline 20.7%</div></div>
+  <section class="evidence" id="evidence">
+    <h3>How it compares</h3>
+    <p class="lead">The same 928 users and 1,682 films, scored against a standard SVD baseline. Higher is better, and every number below comes from this repo's own training run.</p>
+    <div class="metric" data-model="0.296" data-base="0.225" data-fmt="3">
+      <div><div class="name">Ranking quality</div><div class="what">NDCG@10: are the best films near the top of the list?</div></div>
+      <div class="bars"></div>
     </div>
-    <p class="note">MovieLens 100K, ranked against all 1,682 films for 928 users. Figures come from reports/metrics.json, written by this repo's training code.</p>
+    <div class="metric" data-model="0.237" data-base="0.153" data-fmt="3">
+      <div><div class="name">Films found</div><div class="what">Recall@10: how many of the films a user likes show up in the top 10?</div></div>
+      <div class="bars"></div>
+    </div>
+    <div class="metric" data-model="24.4" data-base="20.7" data-fmt="pct">
+      <div><div class="name">Variety</div><div class="what">Catalogue coverage: how much of the catalogue gets recommended to someone?</div></div>
+      <div class="bars"></div>
+    </div>
+    <p class="note">Data: MovieLens 100K. Source: reports/metrics.json.</p>
   </section>
+
+  <p class="note" id="credit" hidden>Posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
 
   <footer>
     <span>Built by Onkar Gupta</span>
@@ -146,6 +163,7 @@ function tile(item, opts) {
   const label = (item.genres || [])[0] || "Film";
   if (item.poster) {
     const img = el("img");
+    document.getElementById("credit").hidden = false;
     img.src = item.poster; img.alt = name; img.loading = "lazy";
     img.onerror = () => art.replaceChildren(el("span", "fallback", label));
     art.appendChild(img);
@@ -156,8 +174,15 @@ function tile(item, opts) {
   const meta = el("div", "meta");
   if (opts.rank) meta.appendChild(el("div", "rank", String(opts.rank).padStart(2, "0")));
   meta.appendChild(el("div", "name", name));
-  const detail = opts.rating ? "Rated " + Math.round(item.score) + " of 5" : [year, (item.genres || [])[0]].filter(Boolean).join(" · ");
-  meta.appendChild(el("div", "sub2", detail));
+  const detail = opts.rating ? null : [year, (item.genres || [])[0]].filter(Boolean).join(" · ");
+  if (opts.rating) {
+    const n = Math.round(item.score);
+    const stars = el("div", "sub2 stars", "★".repeat(n) + "☆".repeat(5 - n));
+    stars.setAttribute("role", "img"); stars.setAttribute("aria-label", "Rated " + n + " out of 5");
+    meta.appendChild(stars);
+  } else {
+    meta.appendChild(el("div", "sub2", detail));
+  }
   root.append(art, meta);
   return root;
 }
@@ -205,6 +230,38 @@ async function showSimilar(item) {
     out.replaceChildren(section("More like " + splitTitle(item.title).name, data.similar, { clickable: true }, "← Back to user " + currentUser, recommend));
   } catch (e) { message(e.message, "error"); }
 }
+
+function setupMetrics() {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fmt = (v, kind) => kind === "pct" ? v.toFixed(1) + "%" : v.toFixed(3);
+  document.querySelectorAll(".metric").forEach(m => {
+    const model = parseFloat(m.dataset.model), base = parseFloat(m.dataset.base), kind = m.dataset.fmt;
+    const rows = [["This model", model, "bar"], ["Standard SVD baseline", base, "bar base"]].map(([who, value, cls]) => {
+      const row = el("div", cls);
+      row.appendChild(el("div", "who", who));
+      const track = el("div", "track"), fill = el("span", "fill");
+      track.appendChild(fill);
+      const val = el("div", "val", reduce ? fmt(value, kind) : fmt(0, kind));
+      row.append(track, val);
+      return { fill, val, value };
+    });
+    rows.forEach(r => m.querySelector(".bars").appendChild(r.fill.closest(".bar")));
+    const run = () => rows.forEach(r => {
+      r.fill.style.width = (r.value / Math.max(model, base) * 100) + "%";
+      if (reduce) return;
+      const start = performance.now();
+      const tick = now => {
+        const t = Math.min(1, (now - start) / 1300), eased = 1 - Math.pow(1 - t, 3);
+        r.val.textContent = fmt(r.value * eased, kind);
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    if (reduce) { run(); return; }
+    new IntersectionObserver((entries, obs) => { if (entries[0].isIntersecting) { run(); obs.disconnect(); } }, { threshold: 0.4 }).observe(m);
+  });
+}
+setupMetrics();
 
 document.getElementById("go").onclick = recommend;
 document.getElementById("user").addEventListener("keydown", e => { if (e.key === "Enter") recommend(); });
