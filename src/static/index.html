@@ -57,6 +57,12 @@
   .meta .sub2 { font-size: 12.5px; color: var(--fg-2); }
   .rank { font-size: 12px; color: var(--fg-2); margin-bottom: 2px; }
 
+  .art.loading, .ph .art { background: linear-gradient(100deg, var(--line) 30%, transparent 50%, var(--line) 70%) 0 0 / 200% 100%; animation: shimmer 1.4s linear infinite; }
+  .ph .line { height: 10px; border-radius: 3px; background: var(--line); margin-top: 10px; width: 80%; animation: pulse 1.4s ease-in-out infinite; }
+  .ph .line.short { width: 45%; margin-top: 6px; }
+  .ph .title-ph { height: 22px; width: 220px; border-radius: 3px; background: var(--line); animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @keyframes pulse { 50% { opacity: .45; } }
   .status, .error { padding: 24px 0; color: var(--fg-2); }
   .error { color: #b3261e; }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -86,7 +92,7 @@
     .grid, .grid.small { grid-template-columns: repeat(2, 1fr); gap: 20px 12px; }
   }
   @media (max-width: 720px) { .metric { grid-template-columns: 1fr; } }
-  @media (prefers-reduced-motion: reduce) { .item { animation: none; } .art, .fill { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .item, .art.loading, .ph .art, .ph .line, .ph .title-ph { animation: none; } .art, .fill { transition: none; } }
 </style>
 </head>
 <body>
@@ -164,8 +170,10 @@ function tile(item, opts) {
   if (item.poster) {
     const img = el("img");
     document.getElementById("credit").hidden = false;
+    art.classList.add("loading");
+    img.onload = () => art.classList.remove("loading");
     img.src = item.poster; img.alt = name; img.loading = "lazy";
-    img.onerror = () => art.replaceChildren(el("span", "fallback", label));
+    img.onerror = () => { art.classList.remove("loading"); art.replaceChildren(el("span", "fallback", label)); };
     art.appendChild(img);
   } else {
     art.appendChild(el("span", "fallback", label));
@@ -201,7 +209,27 @@ function section(title, items, opts, backLabel, onBack) {
   return sec;
 }
 
-function message(text, cls) { out.replaceChildren(el("p", cls, text)); }
+function placeholders(count) {
+  const sec = el("section", "block ph");
+  sec.setAttribute("aria-hidden", "true");
+  const head = el("div", "head");
+  head.appendChild(el("div", "title-ph"));
+  const grid = el("div", "grid");
+  for (let i = 0; i < count; i++) {
+    const item = el("div", "item");
+    item.append(el("div", "art"), el("div", "line"), el("div", "line short"));
+    grid.appendChild(item);
+  }
+  sec.append(head, grid);
+  return sec;
+}
+
+function showLoading() {
+  out.replaceChildren(placeholders(10));
+  out.setAttribute("aria-busy", "true");
+}
+
+function message(text, cls) { out.removeAttribute("aria-busy"); out.replaceChildren(el("p", cls, text)); }
 
 async function getJson(url) {
   const res = await fetch(url);
@@ -212,10 +240,11 @@ async function getJson(url) {
 async function recommend() {
   const user = document.getElementById("user").value;
   if (!user) return message("Please type a user number.", "error");
-  message("Loading...", "status");
+  showLoading();
   try {
     const [rec, hist] = await Promise.all([getJson("/recommend/" + user + "?k=10"), getJson("/history/" + user + "?k=5")]);
     currentUser = user;
+    out.removeAttribute("aria-busy");
     out.replaceChildren();
     if (hist.history.length) out.appendChild(section("Because user " + user + " rated these highly", hist.history, { small: true, rating: true }));
     const isNew = rec.strategy === "popular";
@@ -224,9 +253,10 @@ async function recommend() {
 }
 
 async function showSimilar(item) {
-  message("Loading...", "status");
+  showLoading();
   try {
     const data = await getJson("/similar/" + item.item_id + "?k=10");
+    out.removeAttribute("aria-busy");
     out.replaceChildren(section("More like " + splitTitle(item.title).name, data.similar, { clickable: true }, "← Back to user " + currentUser, recommend));
   } catch (e) { message(e.message, "error"); }
 }
