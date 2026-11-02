@@ -2,6 +2,7 @@
 
 import json
 
+import pandas as pd
 import pytest
 import yaml
 from fastapi.testclient import TestClient
@@ -24,9 +25,12 @@ def _write_config(tmp_path, auth_enabled):
             "ratings_path": SAMPLE,
             "item_titles_path": str(tmp_path / "no_titles.item"),
             "usage_log_path": str(tmp_path / "usage.jsonl"),
+            "posters_path": str(tmp_path / "posters.json"),
         }
     )
     config["auth"]["enabled"] = auth_enabled
+    item_ids = pd.read_csv(SAMPLE)["item_id"].unique()
+    (tmp_path / "posters.json").write_text(json.dumps({str(i): f"https://example.com/{i}.jpg" for i in item_ids}), encoding="utf-8")
     path = tmp_path / f"config_auth_{auth_enabled}.yaml"
     path.write_text(yaml.safe_dump(config), encoding="utf-8")
     return path
@@ -60,6 +64,11 @@ def test_history_lists_highest_rated_first_and_unknown_user_is_empty(client):
     assert 0 < len(history) <= 5
     assert history[0]["score"] >= history[-1]["score"]
     assert client.get("/history/999999").json()["history"] == []
+
+
+def test_items_carry_their_poster_link(client):
+    item = client.get("/recommend/1?k=1").json()["recommendations"][0]
+    assert item["poster"] == f"https://example.com/{item['item_id']}.jpg"
 
 
 def test_known_user_gets_personalised_recommendations(client):

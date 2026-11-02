@@ -7,90 +7,84 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f6f4ef; --surface: #ffffff; --fg: #15151a; --fg-2: rgba(21,21,26,.64); --fg-3: rgba(21,21,26,.45);
-    --line: rgba(21,21,26,.12); --accent: #e5484d;
+    --bg: #fafaf8; --fg: #111; --fg-2: #6b6b66; --line: #e4e4df; --accent: #111;
     --serif: "Fraunces", Georgia, serif; --sans: "Inter", system-ui, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #101014; --surface: #18181d; --fg: #f4f2ec; --fg-2: rgba(244,242,236,.66); --fg-3: rgba(244,242,236,.45); --line: rgba(244,242,236,.14); --accent: #ff6b70; }
+    :root { --bg: #0e0e0e; --fg: #f2f2ee; --fg-2: #9a9a94; --line: #262624; --accent: #f2f2ee; }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--fg); }
-  body { font: 400 16px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+  body { font: 400 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-underline-offset: 4px; text-decoration-color: var(--line); }
   a:hover { text-decoration-color: currentColor; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  :focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  .muted { color: var(--fg-2); }
 
-  nav.top { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; font-size: 14px; }
-  nav.top .brand { font-weight: 600; letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; }
-  nav.top .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  nav.top { display: flex; justify-content: space-between; padding: 24px 0; font-size: 14px; }
   nav.top .links { display: flex; gap: 20px; color: var(--fg-2); }
 
-  .hero { padding: clamp(28px, 6vw, 64px) 0 28px; }
-  h1 { font: 400 clamp(38px, 6.5vw, 72px)/1 var(--serif); letter-spacing: -.03em; margin: 0 0 14px; }
-  .sub { color: var(--fg-2); max-width: 36rem; margin: 0 0 28px; }
-  .picker { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .picker label { font-size: 14px; color: var(--fg-2); }
-  input { width: 92px; font: 600 16px var(--sans); padding: 12px 16px; background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; }
-  .go { font: 600 15px var(--sans); padding: 12px 24px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; cursor: pointer; transition: transform .15s; }
-  .go:hover { transform: translateY(-1px); }
-  .hint { width: 100%; margin: 4px 0 0; font-size: 13px; color: var(--fg-3); }
+  .hero { padding: clamp(40px, 8vw, 88px) 0 32px; }
+  h1 { font: 400 clamp(36px, 6vw, 64px)/1.02 var(--serif); letter-spacing: -.03em; margin: 0 0 14px; }
+  .sub { color: var(--fg-2); max-width: 34rem; margin: 0 0 28px; }
+  .picker { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .picker label { color: var(--fg-2); margin-right: 4px; }
+  input { width: 84px; font: 500 15px var(--sans); padding: 10px 12px; background: transparent; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; }
+  .go { font: 500 14px var(--sans); padding: 10px 20px; border: 1px solid var(--fg); border-radius: 6px; background: var(--fg); color: var(--bg); cursor: pointer; }
+  .go:hover { opacity: .85; }
+  .hint { width: 100%; margin: 6px 0 0; font-size: 13px; color: var(--fg-2); }
 
-  section.block { padding: 28px 0 8px; }
-  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-  h2 { font: 400 24px/1.2 var(--serif); letter-spacing: -.02em; margin: 0; }
-  .back { font: 500 14px var(--sans); background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; }
-  .back:hover { text-decoration: underline; }
+  section.block { padding: 32px 0 8px; border-top: 1px solid var(--line); margin-top: 24px; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  h2 { font: 400 22px/1.2 var(--serif); letter-spacing: -.02em; margin: 0; }
+  .back { font: 500 14px var(--sans); background: none; border: 0; color: var(--fg); cursor: pointer; padding: 0; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
 
-  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px 16px; align-items: start; }
   .grid.small { grid-template-columns: repeat(5, 1fr); }
-  .card { --h: 210; position: relative; display: flex; flex-direction: column; justify-content: space-between; text-align: left; min-height: 188px; padding: 14px; border: 0; border-radius: 16px; color: #fff; cursor: pointer;
-    background: linear-gradient(160deg, hsl(var(--h) 52% 36%), hsl(var(--h) 48% 22%)); transition: transform .2s, box-shadow .2s; animation: rise .45s ease both; font-family: var(--sans); }
-  .card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.22); }
-  .card .rank { font-size: 12px; font-weight: 600; opacity: .7; letter-spacing: .06em; }
-  .card .title { font: 400 19px/1.15 var(--serif); letter-spacing: -.01em; margin: 10px 0 4px; }
-  .card .year { font-size: 12px; opacity: .72; }
-  .card .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
-  .card .tag { font-size: 10.5px; font-weight: 500; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.16); }
-  .grid.small .card { min-height: 128px; }
-  .grid.small .card .title { font-size: 15px; }
-  .grid.static .card { cursor: default; }
-  .grid.static .card:hover { transform: none; box-shadow: none; }
-  .stars { font-size: 12px; letter-spacing: .08em; opacity: .9; }
+  .item { display: block; width: 100%; padding: 0; background: none; border: 0; text-align: left; color: inherit; font: inherit; cursor: pointer; animation: rise .4s ease both; }
+  .grid.static .item { cursor: default; }
+  .art { position: relative; aspect-ratio: 2 / 3; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; transition: border-color .2s; }
+  .item:hover .art { border-color: var(--fg); }
+  .grid.static .item:hover .art { border-color: var(--line); }
+  .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .art .fallback { position: absolute; left: 12px; bottom: 12px; font: 400 15px/1.15 var(--serif); color: var(--fg-2); }
+  .meta { margin-top: 10px; }
+  .meta .name { font-weight: 500; font-size: 14px; line-height: 1.3; }
+  .meta .sub2 { font-size: 12.5px; color: var(--fg-2); }
+  .rank { font-size: 12px; color: var(--fg-2); margin-bottom: 2px; }
 
-  .status { color: var(--fg-3); padding: 24px 0; }
-  .error { color: #c0392b; padding: 24px 0; }
-  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .status, .error { padding: 24px 0; color: var(--fg-2); }
+  .error { color: #b3261e; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-  .evidence { margin-top: 48px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px; }
+  .evidence { margin-top: 56px; padding: 32px 0; border-top: 1px solid var(--line); }
   .evidence h3 { margin: 0 0 4px; font: 400 22px var(--serif); letter-spacing: -.02em; }
-  .evidence .lead { margin: 0 0 22px; color: var(--fg-2); font-size: 14px; }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .stat .k { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); }
-  .stat .num { font: 400 clamp(36px, 5vw, 52px)/1.05 var(--serif); letter-spacing: -.03em; margin: 6px 0 4px; }
+  .evidence .lead { margin: 0 0 24px; color: var(--fg-2); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .stat .k { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+  .stat .num { font: 400 clamp(34px, 5vw, 48px)/1.05 var(--serif); letter-spacing: -.03em; margin: 6px 0 2px; }
   .stat .vs { font-size: 13px; color: var(--fg-2); }
-  .note { margin: 20px 0 0; font-size: 12.5px; color: var(--fg-3); }
+  .note { margin: 24px 0 0; font-size: 12.5px; color: var(--fg-2); }
 
-  footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 32px 0 48px; font-size: 14px; color: var(--fg-2); }
+  footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 24px 0 48px; border-top: 1px solid var(--line); font-size: 13px; color: var(--fg-2); }
   footer nav { display: flex; gap: 20px; }
 
   @media (max-width: 860px) { .grid, .grid.small { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 560px) {
-    .grid, .grid.small { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .grid, .grid.small { grid-template-columns: repeat(2, 1fr); gap: 20px 12px; }
     .stats { grid-template-columns: 1fr; }
-    .evidence { padding: 20px; }
   }
-  @media (prefers-reduced-motion: reduce) { .card, .go { animation: none; transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .item { animation: none; } .art { transition: none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav class="top">
-    <span class="brand"><span class="dot"></span>Recommendation Engine</span>
+    <span>Recommendation Engine</span>
     <span class="links"><a href="https://github.com/Onkar-Gupta/recommendation-engine">Source</a><a href="/docs">API docs</a></span>
   </nav>
 
@@ -111,9 +105,9 @@
     <h3>Measured, not claimed</h3>
     <p class="lead">Compared with a standard TruncatedSVD baseline on the same data.</p>
     <div class="stats">
-      <div class="stat"><div class="k">NDCG@10</div><div class="num">0.296</div><div class="vs">Baseline: 0.225</div></div>
-      <div class="stat"><div class="k">Recall@10</div><div class="num">0.237</div><div class="vs">Baseline: 0.153</div></div>
-      <div class="stat"><div class="k">Catalogue coverage</div><div class="num">24.4%</div><div class="vs">Baseline: 20.7%</div></div>
+      <div class="stat"><div class="k">NDCG@10</div><div class="num">0.296</div><div class="vs">Baseline 0.225</div></div>
+      <div class="stat"><div class="k">Recall@10</div><div class="num">0.237</div><div class="vs">Baseline 0.153</div></div>
+      <div class="stat"><div class="k">Catalogue coverage</div><div class="num">24.4%</div><div class="vs">Baseline 20.7%</div></div>
     </div>
     <p class="note">MovieLens 100K, ranked against all 1,682 films for 928 users. Figures come from reports/metrics.json, written by this repo's training code.</p>
   </section>
@@ -125,57 +119,64 @@
 </div>
 <script>
 const out = document.getElementById("out");
-const HUES = { Action: 8, Adventure: 28, Animation: 285, "Children's": 320, Comedy: 42, Crime: 350, Documentary: 160,
-  Drama: 215, Fantasy: 265, "Film-Noir": 230, Horror: 0, Musical: 300, Mystery: 245, Romance: 335, "Sci-Fi": 195, Thriller: 15, War: 100, Western: 24 };
 let currentUser = null;
 
 function splitTitle(raw) {
   const m = /^(.*?)\s*\((\d{4})\)$/.exec(raw || "");
-  return m ? { name: m[1], year: m[2] } : { name: raw || "Untitled", year: "" };
+  const name = m ? m[1] : (raw || "Untitled");
+  // MovieLens writes "Close Shave, A"; show it the way people say it.
+  const moved = /^(.*), (The|A|An)$/.exec(name);
+  return { name: moved ? moved[2] + " " + moved[1] : name, year: m ? m[2] : "" };
 }
 
-function card(item, opts) {
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function tile(item, opts) {
   const { name, year } = splitTitle(item.title || "Item " + item.item_id);
-  const el = document.createElement(opts.onClick ? "button" : "div");
-  el.className = "card";
-  el.style.setProperty("--h", HUES[(item.genres || [])[0]] ?? 215);
-  el.style.animationDelay = opts.delay + "ms";
-  if (opts.onClick) { el.onclick = opts.onClick; el.setAttribute("aria-label", "More like " + name); }
-  const rank = document.createElement("div");
-  rank.className = "rank";
-  rank.textContent = opts.rating ? "★".repeat(Math.round(item.score)) : String(opts.rank).padStart(2, "0");
-  rank.classList.toggle("stars", !!opts.rating);
-  const body = document.createElement("div");
-  const t = document.createElement("div"); t.className = "title"; t.textContent = name;
-  const y = document.createElement("div"); y.className = "year"; y.textContent = year;
-  const tags = document.createElement("div"); tags.className = "tags";
-  (item.genres || []).slice(0, 2).forEach(g => { const s = document.createElement("span"); s.className = "tag"; s.textContent = g; tags.appendChild(s); });
-  body.append(t, y, tags);
-  el.append(rank, body);
-  return el;
+  const root = el(opts.onClick ? "button" : "div", "item");
+  root.style.animationDelay = opts.delay + "ms";
+  if (opts.onClick) { root.onclick = opts.onClick; root.setAttribute("aria-label", "More like " + name); }
+
+  const art = el("div", "art");
+  const label = (item.genres || [])[0] || "Film";
+  if (item.poster) {
+    const img = el("img");
+    img.src = item.poster; img.alt = name; img.loading = "lazy";
+    img.onerror = () => art.replaceChildren(el("span", "fallback", label));
+    art.appendChild(img);
+  } else {
+    art.appendChild(el("span", "fallback", label));
+  }
+
+  const meta = el("div", "meta");
+  if (opts.rank) meta.appendChild(el("div", "rank", String(opts.rank).padStart(2, "0")));
+  meta.appendChild(el("div", "name", name));
+  const detail = opts.rating ? "Rated " + Math.round(item.score) + " of 5" : [year, (item.genres || [])[0]].filter(Boolean).join(" · ");
+  meta.appendChild(el("div", "sub2", detail));
+  root.append(art, meta);
+  return root;
 }
 
 function section(title, items, opts, backLabel, onBack) {
-  const sec = document.createElement("section");
-  sec.className = "block";
-  const head = document.createElement("div"); head.className = "head";
-  const h = document.createElement("h2"); h.textContent = title;
-  head.appendChild(h);
-  if (onBack) { const b = document.createElement("button"); b.className = "back"; b.textContent = backLabel; b.onclick = onBack; head.appendChild(b); }
-  const grid = document.createElement("div");
-  grid.className = "grid" + (opts.small ? " small static" : "");
-  items.forEach((it, i) => grid.appendChild(card(it, {
-    rank: i + 1, delay: i * 40, rating: opts.rating,
+  const sec = el("section", "block");
+  const head = el("div", "head");
+  head.appendChild(el("h2", "", title));
+  if (onBack) { const b = el("button", "back", backLabel); b.onclick = onBack; head.appendChild(b); }
+  const grid = el("div", "grid" + (opts.small ? " small static" : ""));
+  items.forEach((it, i) => grid.appendChild(tile(it, {
+    rank: opts.small ? 0 : i + 1, delay: i * 35, rating: opts.rating,
     onClick: opts.clickable ? () => showSimilar(it) : null,
   })));
   sec.append(head, grid);
   return sec;
 }
 
-function message(text, cls) {
-  out.innerHTML = "";
-  const p = document.createElement("p"); p.className = cls; p.textContent = text; out.appendChild(p);
-}
+function message(text, cls) { out.replaceChildren(el("p", cls, text)); }
 
 async function getJson(url) {
   const res = await fetch(url);
@@ -190,7 +191,7 @@ async function recommend() {
   try {
     const [rec, hist] = await Promise.all([getJson("/recommend/" + user + "?k=10"), getJson("/history/" + user + "?k=5")]);
     currentUser = user;
-    out.innerHTML = "";
+    out.replaceChildren();
     if (hist.history.length) out.appendChild(section("Because user " + user + " rated these highly", hist.history, { small: true, rating: true }));
     const isNew = rec.strategy === "popular";
     out.appendChild(section(isNew ? "New user: the most popular films" : "Top 10 for user " + user, rec.recommendations, { clickable: true }));
@@ -201,8 +202,7 @@ async function showSimilar(item) {
   message("Loading...", "status");
   try {
     const data = await getJson("/similar/" + item.item_id + "?k=10");
-    out.innerHTML = "";
-    out.appendChild(section("More like " + splitTitle(item.title).name, data.similar, { clickable: true }, "← Back to user " + currentUser, recommend));
+    out.replaceChildren(section("More like " + splitTitle(item.title).name, data.similar, { clickable: true }, "← Back to user " + currentUser, recommend));
   } catch (e) { message(e.message, "error"); }
 }
 
