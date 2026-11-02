@@ -82,7 +82,7 @@ def load_item_titles(path):
     may have no title file.
     """
     path = Path(path)
-    if not path.exists():
+    if not path.is_file():
         return {}
 
     titles = {}
@@ -106,7 +106,7 @@ def load_item_genres(path):
     Optional like load_item_titles: returns {} if the file does not exist.
     """
     path = Path(path)
-    if not path.exists():
+    if not path.is_file():
         return {}
 
     genres = {}

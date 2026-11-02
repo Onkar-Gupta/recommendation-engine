@@ -78,3 +78,10 @@ def test_load_item_genres_reads_flags_and_skips_unknown(tmp_path):
 
     assert load_item_genres(path) == {7: ["Comedy", "Romance"]}
     assert load_item_genres(tmp_path / "missing") == {}
+
+
+def test_empty_titles_path_means_no_titles_not_a_crash():
+    from src.data_loader import load_item_genres, load_item_titles
+
+    assert load_item_titles("") == {}
+    assert load_item_genres("") == {}
