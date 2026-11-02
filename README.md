@@ -36,7 +36,8 @@ pip install -r requirements.txt
 
 python scripts/download_data.py     # downloads MovieLens 100K
 python -m src.train                 # trains, evaluates, writes reports/metrics.json
-pytest tests/                       # 26 tests, all real checks against real data
+pytest tests/                       # all real checks against real data
+uvicorn src.serve:create_app --factory   # serves the trained model on http://127.0.0.1:8000
 ```
 
 Train on your own data instead:
@@ -54,7 +55,7 @@ python -m src.train --data path/to/your_ratings.csv --config config.yaml
 - `src/train.py` — trains with BPR, evaluates, saves the model + metrics
 - `src/evaluate.py` — RMSE, Precision@K, Recall@K, NDCG@K, catalogue coverage, all hand-tested against known values
 - `scripts/sweep.py` — the hyperparameter sweep that produced the final config
-- `src/serve.py`, `src/middleware.py` — FastAPI serving layer (next up)
+- `src/serve.py`, `src/middleware.py` — FastAPI serving layer (see API below)
 
 All config (hyperparameters, paths, column mappings) lives in `config.yaml`. No hardcoded values in `src/`.
 
@@ -82,9 +83,25 @@ recommendation-engine/
 └── tests/                 # 26 tests across data loading, metrics, model, training
 ```
 
+## API
+
+Start it with `uvicorn src.serve:create_app --factory`, then open `/docs` for the interactive page.
+
+| Endpoint | What it returns |
+|----------|-----------------|
+| `GET /health` | status, model version, dataset name |
+| `GET /recommend/{user_id}?k=10` | top-k unseen items. Unknown users get the most popular items (`strategy: "popular"`) |
+| `GET /similar/{item_id}?k=10` | the k nearest items by embedding cosine similarity. 404 for an unknown item |
+
+```bash
+curl "http://127.0.0.1:8000/recommend/1?k=3"
+```
+
+`k` is capped by `serving.max_k` in `config.yaml`. Set `auth.enabled: true` to require an `X-API-Key` header (presence check only, no key validation). Every request is logged to `logs/api_usage.jsonl`.
+
 ## Roadmap
 
-- [ ] FastAPI serving endpoint (in progress)
+- [x] FastAPI serving endpoint
 - [x] Hyperparameter sweep, NDCG@10 and catalogue coverage metrics
 - [ ] Docker, one-command setup
 - [ ] Hugging Face Spaces demo (free, permanent)
