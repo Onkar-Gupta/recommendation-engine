@@ -49,9 +49,10 @@ def test_health(client):
     assert body["status"] == "ok"
 
 
-def test_root_redirects_to_docs(client):
-    response = client.get("/", follow_redirects=False)
-    assert response.headers["location"] == "/docs"
+def test_root_serves_the_web_page(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "Recommendation Engine" in response.text
 
 
 def test_known_user_gets_personalised_recommendations(client):

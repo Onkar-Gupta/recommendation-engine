@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse
 from sklearn.metrics.pairwise import cosine_similarity
 
 import src.model  # noqa: F401  Must run before load_model: registers the custom Keras class.
@@ -59,7 +59,7 @@ def create_app(config_path="config.yaml"):
 
     @app.get("/", include_in_schema=False)
     def root():
-        return RedirectResponse("/docs")
+        return FileResponse(Path(__file__).parent / "static" / "index.html")
 
     @app.get("/health")
     def health():

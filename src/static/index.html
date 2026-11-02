@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recommendation Engine</title>
+<style>
+  :root { --bg:#f7f7f5; --card:#fff; --text:#1c1c1c; --muted:#666; --accent:#2f5bea; --line:#e3e3df; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161616; --card:#212121; --text:#ececec; --muted:#9a9a9a; --accent:#7b9bff; --line:#333; }
+  }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui, sans-serif; }
+  main { max-width:620px; margin:0 auto; padding:32px 16px; }
+  h1 { font-size:1.6rem; margin:0 0 4px; }
+  p.sub { color:var(--muted); margin:0 0 24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  label { display:block; font-weight:600; margin-bottom:6px; }
+  input { width:90px; padding:8px; font-size:1rem; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text); }
+  button { padding:9px 16px; font-size:1rem; border:0; border-radius:6px; background:var(--accent); color:#fff; cursor:pointer; margin-left:8px; }
+  .hint { color:var(--muted); font-size:.9rem; margin-top:8px; }
+  h2 { font-size:1.1rem; margin:24px 0 8px; }
+  ol { padding-left:0; list-style:none; margin:0; }
+  li { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--line); }
+  li:last-child { border-bottom:0; }
+  li button { background:none; color:var(--accent); border:1px solid var(--accent); padding:4px 10px; font-size:.85rem; margin:0; white-space:nowrap; }
+  .error { color:#c0392b; }
+  footer { margin-top:24px; font-size:.85rem; color:var(--muted); }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Recommendation Engine</h1>
+  <p class="sub">Pick a user and see which movies the model suggests for them.</p>
+
+  <div class="card">
+    <label for="user">User number (1 to 943)</label>
+    <input id="user" type="number" min="1" value="1">
+    <button id="go">Show recommendations</button>
+    <div class="hint">Try a number above 943 to see what a brand-new user gets (popular movies).</div>
+  </div>
+
+  <div id="out"></div>
+
+  <footer>Developers: <a href="/docs">API docs</a></footer>
+</main>
+<script>
+const out = document.getElementById("out");
+
+function render(heading, rows, canFindSimilar) {
+  out.innerHTML = "";
+  const h = document.createElement("h2");
+  h.textContent = heading;
+  const list = document.createElement("ol");
+  rows.forEach(r => {
+    const li = document.createElement("li");
+    const name = document.createElement("span");
+    name.textContent = r.title || "Item " + r.item_id;
+    li.appendChild(name);
+    if (canFindSimilar) {
+      const b = document.createElement("button");
+      b.textContent = "Find similar";
+      b.onclick = () => findSimilar(r);
+      li.appendChild(b);
+    }
+    list.appendChild(li);
+  });
+  out.append(h, list);
+}
+
+function showError(message) {
+  out.innerHTML = "";
+  const p = document.createElement("p");
+  p.className = "error";
+  p.textContent = message;
+  out.appendChild(p);
+}
+
+async function getJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Something went wrong (" + res.status + ")");
+  return res.json();
+}
+
+async function recommend() {
+  const user = document.getElementById("user").value;
+  if (!user) return showError("Please type a user number.");
+  try {
+    const data = await getJson("/recommend/" + user + "?k=10");
+    const heading = data.strategy === "popular"
+      ? "New user: showing the most popular movies"
+      : "Top 10 for user " + user;
+    render(heading, data.recommendations, true);
+  } catch (e) { showError(e.message); }
+}
+
+async function findSimilar(row) {
+  try {
+    const data = await getJson("/similar/" + row.item_id + "?k=10");
+    render("Movies similar to " + (row.title || "item " + row.item_id), data.similar, true);
+  } catch (e) { showError(e.message); }
+}
+
+document.getElementById("go").onclick = recommend;
+document.getElementById("user").addEventListener("keydown", e => { if (e.key === "Enter") recommend(); });
+</script>
+</body>
+</html>

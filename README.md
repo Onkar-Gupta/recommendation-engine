@@ -97,7 +97,7 @@ curl localhost:8000/health
 
 ## API
 
-Start it with `uvicorn src.serve:create_app --factory`, then open `/docs` for the interactive page.
+Start it with `uvicorn src.serve:create_app --factory`, then open `/` for a simple web page (pick a user, see movies). `/docs` has the technical API page.
 
 | Endpoint | What it returns |
 |----------|-----------------|
