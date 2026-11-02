@@ -14,7 +14,7 @@ def _load_sample():
 
 
 def test_triplet_shapes_and_positive_count():
-    df, user2idx, item2idx = _load_sample()
+    df, _user2idx, item2idx = _load_sample()
     n_negatives = 3
     threshold = 4
     user_items = df.groupby("user_idx")["item_idx"].apply(set).to_dict()
@@ -28,10 +28,10 @@ def test_triplet_shapes_and_positive_count():
 
 
 def test_negatives_are_never_items_the_user_rated():
-    df, user2idx, item2idx = _load_sample()
+    df, _user2idx, item2idx = _load_sample()
     user_items = df.groupby("user_idx")["item_idx"].apply(set).to_dict()
 
-    users, pos_items, neg_items = generate_bpr_triplets(
+    users, _pos_items, neg_items = generate_bpr_triplets(
         df, user_items, len(item2idx), n_negatives=4, threshold=4, rng=np.random.default_rng(42)
     )
 
@@ -40,7 +40,7 @@ def test_negatives_are_never_items_the_user_rated():
 
 
 def test_positives_are_real_high_ratings():
-    df, user2idx, item2idx = _load_sample()
+    df, _user2idx, item2idx = _load_sample()
     user_items = df.groupby("user_idx")["item_idx"].apply(set).to_dict()
     threshold = 4
 

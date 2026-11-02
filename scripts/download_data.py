@@ -11,7 +11,7 @@ from pathlib import Path
 import certifi
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from src.data_loader import load_config  # noqa: E402
+from src.data_loader import load_config
 
 # Windows python.org builds don't always pick up the OS cert store; point
 # urllib at certifi's bundle so the GroupLens download verifies cleanly.

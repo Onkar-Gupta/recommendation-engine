@@ -4,7 +4,13 @@ import math
 
 import pandas as pd
 
-from src.evaluate import evaluate_recommendations, ndcg_at_k, precision_at_k, recall_at_k, rmse
+from src.evaluate import (
+    evaluate_recommendations,
+    ndcg_at_k,
+    precision_at_k,
+    recall_at_k,
+    rmse,
+)
 
 
 def test_rmse_perfect():

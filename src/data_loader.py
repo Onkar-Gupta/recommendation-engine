@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import yaml
 
@@ -66,7 +65,7 @@ def split_train_test(df, test_size=0.2, seed=42, min_ratings_per_user=5):
     for _, group in df.groupby("user_id"):
         group = group.sample(frac=1, random_state=seed)
         if len(group) >= min_ratings_per_user:
-            n_test = max(1, int(round(len(group) * test_size)))
+            n_test = max(1, round(len(group) * test_size))
             test_parts.append(group.iloc[:n_test])
             train_parts.append(group.iloc[n_test:])
         else:
