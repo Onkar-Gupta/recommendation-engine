@@ -1,0 +1,6 @@
+# Only needed to open or re-run notebooks/exploration.ipynb. The API and Docker image do not use these.
+matplotlib==3.*
+ipykernel==6.*
+nbformat==5.*
+nbconvert==7.*
+nbclient==0.*
