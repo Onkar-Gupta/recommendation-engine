@@ -44,6 +44,12 @@ jobs:
       - name: make train again (restore the full model for Docker)
         run: make train
 
+      - name: static export builds
+        run: |
+          venv/bin/python scripts/export_static.py --out site
+          test -s site/data.json
+          grep -q 'name="static-data"' site/index.html
+
       - name: docker answers
         run: |
           make docker-build

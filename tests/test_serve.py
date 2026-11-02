@@ -102,3 +102,19 @@ def test_auth_requires_header_when_enabled(client, tmp_dir):
     assert secured.get("/recommend/1").status_code == 401
     assert secured.get("/recommend/1", headers={"X-API-Key": "anything"}).status_code == 200
     assert secured.get("/health").status_code == 200
+
+
+def test_static_export_matches_the_api(client, tmp_dir):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("export_static", "scripts/export_static.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    module.export(str(tmp_dir / "config_auth_False.yaml"), tmp_dir / "site")
+
+    data = json.loads((tmp_dir / "site/data.json").read_text(encoding="utf-8"))
+    from_api = [r["item_id"] for r in client.get("/recommend/1?k=10").json()["recommendations"]]
+    assert data["recommend"]["1"] == from_api
+    assert data["popular"]
+    assert 'name="static-data"' in (tmp_dir / "site/index.html").read_text(encoding="utf-8")

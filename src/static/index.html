@@ -117,6 +117,7 @@
       <button class="go" id="go">Recommend</button>
       <p class="hint">A number above 943 is a brand-new user, who gets the most popular films.</p>
     </div>
+    <p class="note" id="snapshot" hidden>This demo shows saved answers from the model's API, so it runs without a server. The live API is in the repository.</p>
   </header>
 
   <div id="out" aria-live="polite"></div>
@@ -269,7 +270,37 @@ function showLoading() {
 
 function message(text, cls) { out.removeAttribute("aria-busy"); out.replaceChildren(el("p", cls, text)); }
 
+// Static mode: the exported copy of this page carries <meta name="static-data"> and reads saved
+// answers from a JSON file instead of calling the API (scripts/export_static.py writes both).
+const snapshotUrl = document.querySelector('meta[name="static-data"]')?.content;
+let SNAPSHOT = null;
+
+async function loadSnapshot() {
+  const res = await fetch(snapshotUrl);
+  if (!res.ok) throw new Error("Could not load the saved results (" + res.status + ")");
+  SNAPSHOT = await res.json();
+  document.getElementById("snapshot").hidden = false;
+}
+
+function snapshotItem(id, score) {
+  const item = SNAPSHOT.items[id];
+  return { item_id: Number(id), title: item.title, genres: item.genres, score };
+}
+
+function snapshotAnswer(url) {
+  const [, route, id] = url.split("?")[0].split("/");
+  const d = SNAPSHOT;
+  if (route === "recommend") {
+    const ids = d.recommend[id];
+    return { user_id: Number(id), strategy: ids ? "personalized" : "popular", recommendations: (ids || d.popular).map(i => snapshotItem(i, 0)) };
+  }
+  if (route === "history") return { history: (d.history[id] || []).map(([i, rating]) => snapshotItem(i, rating)) };
+  if (route === "similar" && d.similar[id]) return { similar: d.similar[id].map(i => snapshotItem(i, 0)) };
+  throw new Error("Something went wrong (404)");
+}
+
 async function getJson(url) {
+  if (SNAPSHOT) return snapshotAnswer(url);
   const res = await fetch(url);
   if (!res.ok) throw new Error("Something went wrong (" + res.status + ")");
   return res.json();
@@ -333,7 +364,12 @@ setupMetrics();
 
 document.getElementById("go").onclick = recommend;
 document.getElementById("user").addEventListener("keydown", e => { if (e.key === "Enter") recommend(); });
-recommend();
+if (snapshotUrl) {
+  showLoading();
+  loadSnapshot().then(recommend).catch(e => message(e.message, "error"));
+} else {
+  recommend();
+}
 </script>
 </body>
 </html>
