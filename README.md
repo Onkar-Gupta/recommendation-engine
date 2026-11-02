@@ -83,6 +83,18 @@ recommendation-engine/
 └── tests/                 # 26 tests across data loading, metrics, model, training
 ```
 
+## Docker
+
+The image holds code only. It reads the model and data you trained locally, so one image serves any trained model.
+
+```bash
+make train          # or: .un.ps1 train
+make docker-build && make docker-run
+curl localhost:8000/health
+```
+
+`make all` (or `.un.ps1 all`) goes from a fresh clone to a running API: setup, data, train, serve. `make train-custom DATA=my.csv` trains on your own CSV.
+
 ## API
 
 Start it with `uvicorn src.serve:create_app --factory`, then open `/docs` for the interactive page.
@@ -103,7 +115,7 @@ curl "http://127.0.0.1:8000/recommend/1?k=3"
 
 - [x] FastAPI serving endpoint
 - [x] Hyperparameter sweep, NDCG@10 and catalogue coverage metrics
-- [ ] Docker, one-command setup
+- [x] Docker, one-command setup
 - [ ] Hugging Face Spaces demo (free, permanent)
 - [ ] pip-installable CLI
 
