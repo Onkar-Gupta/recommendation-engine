@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.responses import RedirectResponse
 from sklearn.metrics.pairwise import cosine_similarity
 
 import src.model  # noqa: F401  Must run before load_model: registers the custom Keras class.
@@ -55,6 +56,10 @@ def create_app(config_path="config.yaml"):
     def check_k(k):
         if not 1 <= k <= serving["max_k"]:
             raise HTTPException(422, f"k must be between 1 and {serving['max_k']}")
+
+    @app.get("/", include_in_schema=False)
+    def root():
+        return RedirectResponse("/docs")
 
     @app.get("/health")
     def health():
