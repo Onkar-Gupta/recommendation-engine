@@ -4,65 +4,139 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Recommendation Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f7f7f5; --card:#fff; --text:#1c1c1c; --muted:#666; --accent:#2f5bea; --line:#e3e3df; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#161616; --card:#212121; --text:#ececec; --muted:#9a9a9a; --accent:#7b9bff; --line:#333; }
+  :root {
+    --bg: #f7f5f0; --fg: #141414; --fg-2: rgba(20,20,20,.62); --fg-3: rgba(20,20,20,.42);
+    --line: rgba(20,20,20,.14); --accent: #1f3dd6;
+    --serif: "Fraunces", Georgia, serif; --sans: "Inter", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
   }
-  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui, sans-serif; }
-  main { max-width:620px; margin:0 auto; padding:32px 16px; }
-  h1 { font-size:1.6rem; margin:0 0 4px; }
-  p.sub { color:var(--muted); margin:0 0 24px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
-  label { display:block; font-weight:600; margin-bottom:6px; }
-  input { width:90px; padding:8px; font-size:1rem; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text); }
-  button { padding:9px 16px; font-size:1rem; border:0; border-radius:6px; background:var(--accent); color:#fff; cursor:pointer; margin-left:8px; }
-  .hint { color:var(--muted); font-size:.9rem; margin-top:8px; }
-  h2 { font-size:1.1rem; margin:24px 0 8px; }
-  ol { padding-left:0; list-style:none; margin:0; }
-  li { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--line); }
-  li:last-child { border-bottom:0; }
-  li button { background:none; color:var(--accent); border:1px solid var(--accent); padding:4px 10px; font-size:.85rem; margin:0; white-space:nowrap; }
-  .error { color:#c0392b; }
-  footer { margin-top:24px; font-size:.85rem; color:var(--muted); }
-  a { color:var(--accent); }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0c0c0c; --fg: #f1efe9; --fg-2: rgba(241,239,233,.64); --fg-3: rgba(241,239,233,.42); --line: rgba(241,239,233,.16); --accent: #8ea2ff; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--accent); color: var(--bg); }
+  a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 4px; }
+  a:hover { text-decoration-color: currentColor; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  .label { font: 500 11px/1.3 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--fg-3); }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 28px 0; border-bottom: 1px solid var(--line); }
+  header .name { font: 500 15px var(--sans); letter-spacing: -.01em; }
+
+  .hero { padding: clamp(48px, 9vw, 104px) 0 clamp(40px, 6vw, 72px); }
+  h1 { font: 400 clamp(38px, 7vw, 84px)/.98 var(--serif); letter-spacing: -.035em; margin: 0 0 28px; max-width: 14ch; }
+  h1 em { font-style: italic; color: var(--fg-3); }
+  .sub { max-width: 34rem; color: var(--fg-2); margin: 0; }
+
+  .demo { border-top: 1px solid var(--line); padding: 32px 0 56px; display: grid; grid-template-columns: 240px 1fr; gap: 40px; }
+  .controls label { display: block; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; }
+  input { width: 84px; font: 500 16px var(--mono); padding: 11px 14px; background: transparent; color: var(--fg); border: 1px solid var(--line); border-radius: 999px; }
+  .go { font: 500 14px var(--sans); padding: 11px 22px; border: 0; border-radius: 999px; background: var(--fg); color: var(--bg); cursor: pointer; transition: opacity .2s; }
+  .go:hover { opacity: .82; }
+  .hint { margin: 14px 0 0; font-size: 13px; color: var(--fg-3); }
+
+  .results ol { list-style: none; margin: 0; padding: 0; }
+  .results h2 { font: 400 22px/1.2 var(--serif); letter-spacing: -.02em; margin: 0 0 16px; }
+  .results li { display: grid; grid-template-columns: 36px 1fr auto; align-items: baseline; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); animation: rise .45s ease both; }
+  .results li:last-child { border-bottom: 1px solid var(--line); }
+  .results .idx { font: 400 12px var(--mono); color: var(--fg-3); }
+  .results .more { font: 500 12px var(--mono); background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; letter-spacing: .04em; }
+  .results .more:hover { text-decoration: underline; }
+  .empty { color: var(--fg-3); }
+  .error { color: #c0392b; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .evidence { border-top: 1px solid var(--line); padding: 40px 0 24px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 20px; }
+  .num { font: 400 clamp(40px, 6vw, 64px)/1 var(--serif); letter-spacing: -.04em; margin: 8px 0 6px; }
+  .vs { font-size: 13px; color: var(--fg-2); }
+  .note { margin: 28px 0 0; font-size: 13px; color: var(--fg-3); max-width: 44rem; }
+
+  footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 28px 0 48px; border-top: 1px solid var(--line); margin-top: 40px; font-size: 14px; color: var(--fg-2); }
+  footer nav { display: flex; gap: 20px; }
+
+  @media (max-width: 720px) {
+    .demo { grid-template-columns: 1fr; gap: 28px; }
+    .stats { grid-template-columns: 1fr; gap: 28px; }
+    header .label { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .results li { animation: none; } .go { transition: none; } }
 </style>
 </head>
 <body>
-<main>
-  <h1>Recommendation Engine</h1>
-  <p class="sub">Pick a user and see which movies the model suggests for them.</p>
+<div class="wrap">
+  <header>
+    <span class="name">Recommendation Engine</span>
+    <span class="label">TensorFlow &middot; BPR &middot; FastAPI</span>
+  </header>
 
-  <div class="card">
-    <label for="user">User number (1 to 943)</label>
-    <input id="user" type="number" min="1" value="1">
-    <button id="go">Show recommendations</button>
-    <div class="hint">Try a number above 943 to see what a brand-new user gets (popular movies).</div>
-  </div>
+  <section class="hero">
+    <h1>Built to rank well, <em>not just to rate well.</em></h1>
+    <p class="sub">A recommender trained to put the right films first for each person, then served live. Pick a user and watch it work.</p>
+  </section>
 
-  <div id="out"></div>
+  <section class="demo">
+    <div class="controls">
+      <label class="label" for="user">User, 1 to 943</label>
+      <div class="row">
+        <input id="user" type="number" min="1" value="1" inputmode="numeric">
+        <button class="go" id="go">Recommend</button>
+      </div>
+      <p class="hint">A number above 943 is a brand-new user, who gets the most popular films.</p>
+    </div>
+    <div class="results" id="out" aria-live="polite">
+      <p class="empty">Results appear here.</p>
+    </div>
+  </section>
 
-  <footer>Developers: <a href="/docs">API docs</a></footer>
-</main>
+  <section class="evidence">
+    <span class="label">Measured, not claimed</span>
+    <div class="stats">
+      <div><span class="label">NDCG@10</span><div class="num">0.296</div><div class="vs">TruncatedSVD baseline: 0.225</div></div>
+      <div><span class="label">Recall@10</span><div class="num">0.237</div><div class="vs">TruncatedSVD baseline: 0.153</div></div>
+      <div><span class="label">Catalogue coverage</span><div class="num">24.4%</div><div class="vs">TruncatedSVD baseline: 20.7%</div></div>
+    </div>
+    <p class="note">MovieLens 100K, ranked against the full catalogue of 1,682 films for 928 users. Numbers come from <code>reports/metrics.json</code>, written by the training code in this repo.</p>
+  </section>
+
+  <footer>
+    <span>Built by Onkar Gupta</span>
+    <nav>
+      <a href="https://github.com/Onkar-Gupta/recommendation-engine">Source</a>
+      <a href="https://linkedin.com/in/onkar-gupta-ai">LinkedIn</a>
+      <a href="/docs">API docs</a>
+    </nav>
+  </footer>
+</div>
 <script>
 const out = document.getElementById("out");
 
-function render(heading, rows, canFindSimilar) {
+function render(heading, rows) {
   out.innerHTML = "";
   const h = document.createElement("h2");
   h.textContent = heading;
   const list = document.createElement("ol");
-  rows.forEach(r => {
+  rows.forEach((r, i) => {
     const li = document.createElement("li");
+    li.style.animationDelay = i * 35 + "ms";
+    const idx = document.createElement("span");
+    idx.className = "idx";
+    idx.textContent = String(i + 1).padStart(2, "0");
     const name = document.createElement("span");
     name.textContent = r.title || "Item " + r.item_id;
-    li.appendChild(name);
-    if (canFindSimilar) {
-      const b = document.createElement("button");
-      b.textContent = "Find similar";
-      b.onclick = () => findSimilar(r);
-      li.appendChild(b);
-    }
+    const more = document.createElement("button");
+    more.className = "more";
+    more.textContent = "SIMILAR →";
+    more.onclick = () => findSimilar(r);
+    li.append(idx, name, more);
     list.appendChild(li);
   });
   out.append(h, list);
@@ -87,17 +161,14 @@ async function recommend() {
   if (!user) return showError("Please type a user number.");
   try {
     const data = await getJson("/recommend/" + user + "?k=10");
-    const heading = data.strategy === "popular"
-      ? "New user: showing the most popular movies"
-      : "Top 10 for user " + user;
-    render(heading, data.recommendations, true);
+    render(data.strategy === "popular" ? "New user: the most popular films" : "Top 10 for user " + user, data.recommendations);
   } catch (e) { showError(e.message); }
 }
 
 async function findSimilar(row) {
   try {
     const data = await getJson("/similar/" + row.item_id + "?k=10");
-    render("Movies similar to " + (row.title || "item " + row.item_id), data.similar, true);
+    render("Similar to " + (row.title || "item " + row.item_id), data.similar);
   } catch (e) { showError(e.message); }
 }
 
